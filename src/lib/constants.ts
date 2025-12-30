@@ -223,7 +223,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "Are children welcome?",
     answer:
-      "Children are welcome! A children's meal will be available. Please include them in your RSVP count.",
+      "Due to venue capacity, we are only able to accommodate children who are specifically named on your invitation. If your child is addressed on the invite, a children's meal will be available.",
   },
   {
     question: "Is there parking at the venue?",
