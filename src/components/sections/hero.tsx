@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { FadeIn, StaggerContainer, StaggerItem, ScaleOnHover } from "@/components/motion";
 import { Button } from "@/components/ui/button";
+import { Countdown } from "@/components/countdown";
 import { WEDDING_DETAILS } from "@/lib/constants";
 import { useScrollTo } from "@/hooks/use-scroll-to";
 
@@ -58,6 +59,10 @@ export function HeroSection() {
         </StaggerContainer>
 
         <FadeIn delay={0.7}>
+          <Countdown />
+        </FadeIn>
+
+        <FadeIn delay={0.9}>
           <ScaleOnHover scale={1.05}>
             <Button
               size="lg"
@@ -67,13 +72,6 @@ export function HeroSection() {
               RSVP Now
             </Button>
           </ScaleOnHover>
-        </FadeIn>
-
-        <FadeIn delay={0.9}>
-          <p className="text-xs text-wedding-shade-lightest">
-            <span className="text-wedding-lime">&bull;</span> Save the date{" "}
-            <span className="text-wedding-lime">&bull;</span>
-          </p>
         </FadeIn>
       </main>
 
