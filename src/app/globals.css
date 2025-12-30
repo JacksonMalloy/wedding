@@ -247,8 +247,8 @@ body {
  * Selection styles
  */
 ::selection {
-  background-color: var(--color-accent);
-  color: var(--color-background);
+  background-color: #3390ff;
+  color: white;
 }
 
 /*
