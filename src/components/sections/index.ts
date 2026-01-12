@@ -1,6 +1,7 @@
 export { SectionWrapper } from "./section-wrapper";
 export { HeroSection } from "./hero";
 export { CoupleSection } from "./couple";
+export { UsSection } from "./us";
 export { ScheduleSection } from "./schedule";
 export { TravelSection } from "./travel";
 export { StorySection } from "./story";

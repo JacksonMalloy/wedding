@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Beau_Rivage, Quattrocento } from "next/font/google";
+import { Monsieur_La_Doulaise, Marcellus_SC } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navigation";
 import { Toaster } from "@/components/ui/sonner";
 
-const beauRivage = Beau_Rivage({
-  variable: "--font-beau-rivage",
+const monsieurLaDoulaise = Monsieur_La_Doulaise({
+  variable: "--font-monsieur-la-doulaise",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
 });
 
-const quattrocento = Quattrocento({
-  variable: "--font-quattrocento",
+const marcellusSC = Marcellus_SC({
+  variable: "--font-marcellus-sc",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: "400",
   display: "swap",
 });
 
@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${beauRivage.variable} ${quattrocento.variable} font-sans antialiased`}>
+      <body className={`${monsieurLaDoulaise.variable} ${marcellusSC.variable} font-sans antialiased`}>
         <Navbar />
         <main>{children}</main>
         <Toaster position="top-center" richColors />

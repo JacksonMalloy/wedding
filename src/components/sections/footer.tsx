@@ -21,7 +21,7 @@ export function FooterSection() {
               {WEDDING_DETAILS.date.full}
             </p>
             {WEDDING_DETAILS.hashtag && (
-              <p className="text-wedding-amber mt-2">
+              <p className="text-wedding-green mt-2">
                 {WEDDING_DETAILS.hashtag}
               </p>
             )}
@@ -36,7 +36,7 @@ export function FooterSection() {
                 <a
                   key={email}
                   href={`mailto:${email}`}
-                  className="flex items-center gap-2 text-wedding-shade-light hover:text-wedding-amber transition-colors text-sm"
+                  className="flex items-center gap-2 text-wedding-shade-light hover:text-wedding-green transition-colors text-sm"
                 >
                   <Mail className="h-4 w-4" />
                   <span>{email}</span>
@@ -45,7 +45,7 @@ export function FooterSection() {
             </div>
             <a
               href={`tel:${CONTACT.phone}`}
-              className="flex items-center gap-2 text-wedding-shade-light hover:text-wedding-amber transition-colors"
+              className="flex items-center gap-2 text-wedding-shade-light hover:text-wedding-green transition-colors"
             >
               <Phone className="h-4 w-4" />
               <span>{CONTACT.phone}</span>
@@ -60,7 +60,7 @@ export function FooterSection() {
         <FadeIn delay={0.3}>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-wedding-shade flex items-center gap-1">
-              Made with <Heart className="h-3 w-3 text-wedding-amber" /> by the happy couple
+              Made with <Heart className="h-3 w-3 text-wedding-green" /> by the happy couple
             </p>
 
             <ScaleOnHover scale={1.05}>

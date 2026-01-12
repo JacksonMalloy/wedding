@@ -86,8 +86,8 @@ export function RSVPSection() {
         background="accent"
       >
         <ScrollReveal className="text-center max-w-lg mx-auto">
-          <div className="bg-white rounded-lg p-8 shadow-sm">
-            <PartyPopper className="h-16 w-16 text-wedding-amber mx-auto mb-4" />
+          <div className="bg-wedding-green-light/40 rounded-lg p-8 shadow-sm border border-wedding-green/20">
+            <PartyPopper className="h-16 w-16 text-wedding-green mx-auto mb-4" />
             <h3 className="text-2xl font-semibold text-wedding-black mb-3">
               We&apos;ve received your RSVP!
             </h3>
@@ -122,7 +122,7 @@ export function RSVPSection() {
       background="accent"
     >
       <ScrollReveal className="max-w-xl mx-auto">
-        <div className="bg-white rounded-lg p-6 md:p-8 shadow-sm">
+        <div className="bg-wedding-green-light/40 rounded-lg p-6 md:p-8 shadow-sm border border-wedding-green/20">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Name */}
@@ -301,7 +301,7 @@ export function RSVPSection() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-wedding-amber text-white hover:bg-wedding-amber/90 cursor-pointer"
+                  className="w-full bg-wedding-green text-white hover:bg-wedding-green/90 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>

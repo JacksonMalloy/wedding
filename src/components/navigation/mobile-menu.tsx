@@ -42,7 +42,7 @@ export function MobileMenu({
               className={cn(
                 "text-left py-3 mx-1 px-4 rounded-lg transition-colors text-base tracking-wide",
                 activeSection === item.id
-                  ? "bg-wedding-amber/10 text-wedding-amber"
+                  ? "bg-wedding-green/10 text-wedding-green"
                   : "text-wedding-shade hover:bg-wedding-shade/5 hover:text-wedding-black"
               )}
             >
@@ -55,7 +55,7 @@ export function MobileMenu({
           <ScaleOnHover scale={1.05}>
             <Button
               onClick={() => onNavClick("rsvp")}
-              className="w-full bg-wedding-amber text-white hover:bg-wedding-amber/90 cursor-pointer"
+              className="w-full bg-wedding-green text-white hover:bg-wedding-green/90 cursor-pointer"
             >
               RSVP Now
             </Button>

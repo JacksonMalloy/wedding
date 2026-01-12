@@ -17,11 +17,11 @@ export function HeroSection() {
     >
       <main className="relative z-10 flex w-full max-w-2xl flex-col items-center gap-10 px-6 py-24 text-center">
         <FadeIn delay={0.1}>
-          <span className="mb-4 inline-block h-px w-16 bg-wedding-amber" />
+          <span className="mb-4 inline-block h-px w-16 bg-wedding-green" />
           <h1 className="text-5xl font-serif tracking-tight text-wedding-black sm:text-7xl">
-            {WEDDING_DETAILS.couple.person1} & {WEDDING_DETAILS.couple.person2}
+            {WEDDING_DETAILS.couple.person1} <small className="">+</small> {WEDDING_DETAILS.couple.person2}
           </h1>
-          <span className="mt-4 inline-block h-px w-16 bg-wedding-amber" />
+          <span className="mt-4 inline-block h-px w-16 bg-wedding-green" />
         </FadeIn>
 
         <FadeIn delay={0.3}>
@@ -67,7 +67,7 @@ export function HeroSection() {
             <Button
               size="lg"
               onClick={() => scrollTo("rsvp")}
-              className="mt-4 bg-wedding-amber text-white hover:bg-wedding-amber/90 cursor-pointer"
+              className="mt-4 bg-wedding-green text-white hover:bg-wedding-green/90 cursor-pointer"
             >
               RSVP Now
             </Button>
@@ -82,7 +82,7 @@ export function HeroSection() {
       >
         <button
           onClick={() => scrollTo("schedule")}
-          className="flex flex-col items-center gap-2 text-wedding-shade hover:text-wedding-amber transition-colors"
+          className="flex flex-col items-center gap-2 text-wedding-shade hover:text-wedding-green transition-colors"
           aria-label="Scroll to next section"
         >
           <span className="text-xs uppercase tracking-widest">Scroll</span>

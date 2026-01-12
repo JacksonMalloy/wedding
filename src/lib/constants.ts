@@ -161,28 +161,69 @@ export const TRANSPORT_OPTIONS: TransportOption[] = [
 // Our Story
 export const STORY_MILESTONES: StoryMilestone[] = [
   {
-    date: "September 15, 2023",
-    title: "How We Met",
+    date: "???",
+    title: "Déjà Vu?",
     description:
-      "We met at the Paddlewheeler Pub in New Westminster, BC. The pub has since closed, but our story was just beginning.",
+      "Jackson swore they had matched on a dating app before. Delina had no memory of this whatsoever. To this day, he insists it happened.",
+    images: [
+      "/photos/coffee-jackson.jpeg",
+      "/photos/coffee-downtown.jpeg",
+      "/photos/usual-fridays.jpeg",
+    ],
+  },
+  {
+    date: "September 15, 2023",
+    title: "First Date",
+    description:
+      "We met at the Quay in New Westminster, BC. Jackson was 10 minutes late. Delina was later.",
+    images: [
+      "/photos/paddlewheeler.jpeg",
+      "/photos/vietnamese.jpeg",
+    ],
   },
   {
     date: "September 26, 2023",
     title: "Made It Official",
     description:
-      "Just 11 days later, Jackson asked Delina to be his girlfriend. She said yes.",
+      `Just 11 days later, Jackson asked the question, "Can I call you my girlfriend?". She said yes.`,
+    images: [
+      "/photos/hats-off.jpeg",
+      "/photos/board-game-fail.jpeg",
+      "/photos/pottery-1y.jpeg",
+    ],
   },
   {
     date: "February 29, 2024",
     title: "Moving In Together",
     description:
-      "On the rarest of days—a leap day—we took the leap and moved in together.",
+      "After a 1-week trial we decided on taking the leap 5 months after dating.",
+    images: [
+      "/photos/whistler-trip.jpeg",
+      "/photos/hike.jpeg",
+      "/photos/tswift-gang.jpeg",
+    ],
   },
   {
-    date: "November 12, 2025",
+    date: "March 1, 2024",
+    title: "Becoming a Cat Dad",
+    description:
+      "Jackson became a cat dad, never thought he would see the day.",
+    images: [
+      "/photos/cuddles-with-clive.jpeg",
+      "/photos/cuddles-with-noel.jpeg",
+      "/photos/roscoe-with-us.jpeg",
+    ],
+  },
+  {
+    date: "November 10, 2025",
     title: "The Proposal",
     description:
       "On Ucluelet's Wild Pacific Trail at the Lighthouse Loop, Jackson got down on one knee. She said yes (again).",
+    images: [
+      "/photos/proposal-selfie.jpeg",
+      "/photos/proposal-selfie-2.jpeg",
+      "/photos/birthday.jpeg",
+    ],
   },
 ];
 
@@ -244,11 +285,6 @@ export const FAQ_ITEMS: FAQItem[] = [
     question: "Will the ceremony be indoors or outdoors?",
     answer:
       "Both the ceremony and reception will be held indoors at The Olde Library.",
-  },
-  {
-    question: "Are there any venue restrictions I should know about?",
-    answer:
-      "The venue does not permit confetti, rice, birdseed, glitter, or sparklers. Battery-operated candles are recommended.",
   },
 ];
 

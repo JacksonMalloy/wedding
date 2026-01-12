@@ -23,10 +23,10 @@ export function DetailsSection() {
         <div className="space-y-8">
           {/* Dress Code */}
           <ScrollReveal>
-            <div className="bg-white rounded-lg p-6 border border-wedding-shade-lightest">
+            <div className="bg-wedding-green-light/30 rounded-lg p-6 border border-wedding-green/20">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-full bg-wedding-amber/10 flex items-center justify-center">
-                  <Shirt className="h-5 w-5 text-wedding-amber" />
+                <div className="h-10 w-10 rounded-full bg-wedding-green/20 flex items-center justify-center">
+                  <Shirt className="h-5 w-5 text-wedding-green" />
                 </div>
                 <h3 className="text-xl font-semibold text-wedding-black">
                   Dress Code
@@ -50,10 +50,10 @@ export function DetailsSection() {
 
           {/* Weather */}
           <ScrollReveal>
-            <div className="bg-white rounded-lg p-6 border border-wedding-shade-lightest">
+            <div className="bg-wedding-green-light/30 rounded-lg p-6 border border-wedding-green/20">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-full bg-wedding-amber/10 flex items-center justify-center">
-                  <Sun className="h-5 w-5 text-wedding-amber" />
+                <div className="h-10 w-10 rounded-full bg-wedding-green/20 flex items-center justify-center">
+                  <Sun className="h-5 w-5 text-wedding-green" />
                 </div>
                 <h3 className="text-xl font-semibold text-wedding-black">
                   Weather
@@ -79,8 +79,8 @@ export function DetailsSection() {
         <div>
           <ScrollReveal>
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-full bg-wedding-amber/10 flex items-center justify-center">
-                <HelpCircle className="h-5 w-5 text-wedding-amber" />
+              <div className="h-10 w-10 rounded-full bg-wedding-green/20 flex items-center justify-center">
+                <HelpCircle className="h-5 w-5 text-wedding-green" />
               </div>
               <h3 className="text-xl font-semibold text-wedding-black">
                 Frequently Asked Questions
@@ -91,7 +91,7 @@ export function DetailsSection() {
           <Accordion type="single" collapsible className="w-full">
             {FAQ_ITEMS.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left text-wedding-black hover:text-wedding-amber">
+                <AccordionTrigger className="text-left text-wedding-black hover:text-wedding-green">
                   {faq.question}
                 </AccordionTrigger>
                 <AccordionContent className="text-wedding-shade">

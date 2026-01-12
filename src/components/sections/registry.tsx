@@ -32,10 +32,10 @@ export function RegistrySection() {
           const Icon = registry.icon ? iconMap[registry.icon] || Gift : Gift;
           return (
             <StaggerItem key={index}>
-              <Card className="h-full bg-white border-wedding-shade-lightest hover:shadow-md transition-shadow text-center">
+              <Card className="h-full bg-wedding-green-light/30 border-wedding-green/20 hover:shadow-md transition-shadow text-center">
                 <CardHeader>
-                  <div className="mx-auto h-16 w-16 rounded-full bg-wedding-amber/10 flex items-center justify-center mb-4">
-                    <Icon className="h-8 w-8 text-wedding-amber" />
+                  <div className="mx-auto h-16 w-16 rounded-full bg-wedding-green/20 flex items-center justify-center mb-4">
+                    <Icon className="h-8 w-8 text-wedding-green" />
                   </div>
                   <CardTitle className="text-xl font-semibold text-wedding-black">
                     {registry.name}
@@ -47,7 +47,7 @@ export function RegistrySection() {
                   </p>
                   <ScaleOnHover scale={1.05}>
                     <Button
-                      className="w-full bg-wedding-amber text-white hover:bg-wedding-amber/90 cursor-pointer"
+                      className="w-full bg-wedding-green text-white hover:bg-wedding-green/90 cursor-pointer"
                       asChild
                     >
                       <a

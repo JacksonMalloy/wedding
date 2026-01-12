@@ -45,7 +45,7 @@ export function Navbar() {
             {/* Logo / Couple Names */}
             <button
               onClick={() => handleNavClick("hero")}
-              className="font-serif text-lg tracking-wide text-wedding-black hover:text-wedding-amber transition-colors"
+              className="font-serif text-lg tracking-wide text-wedding-black hover:text-wedding-green transition-colors"
             >
               {WEDDING_DETAILS.couple.person1} & {WEDDING_DETAILS.couple.person2}
             </button>
@@ -59,13 +59,13 @@ export function Navbar() {
                   className={cn(
                     "text-sm tracking-wide transition-colors relative py-1",
                     activeSection === item.id
-                      ? "text-wedding-amber"
+                      ? "text-wedding-green"
                       : "text-wedding-shade hover:text-wedding-black"
                   )}
                 >
                   {item.label}
                   {activeSection === item.id && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-wedding-amber" />
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-wedding-green" />
                   )}
                 </button>
               ))}
@@ -73,7 +73,7 @@ export function Navbar() {
                 <Button
                   onClick={() => handleNavClick("rsvp")}
                   size="sm"
-                  className="bg-wedding-amber text-white hover:bg-wedding-amber/90 cursor-pointer"
+                  className="bg-wedding-green text-white hover:bg-wedding-green/90 cursor-pointer"
                 >
                   RSVP
                 </Button>

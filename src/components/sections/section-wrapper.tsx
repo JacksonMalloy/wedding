@@ -31,7 +31,7 @@ export function SectionWrapper({
         fullHeight && "min-h-screen flex flex-col justify-center",
         background === "default" && "bg-wedding-bg",
         background === "alternate" && "bg-white",
-        background === "accent" && "bg-wedding-accent/30",
+        background === "accent" && "bg-wedding-green-light/40",
         className
       )}
     >
@@ -49,9 +49,9 @@ export function SectionWrapper({
               </p>
             )}
             <div className="mt-6 flex items-center justify-center gap-4">
-              <span className="h-px w-12 bg-wedding-amber" />
-              <span className="h-1.5 w-1.5 rounded-full bg-wedding-amber" />
-              <span className="h-px w-12 bg-wedding-amber" />
+              <span className="h-px w-12 bg-wedding-green" />
+              <span className="h-1.5 w-1.5 rounded-full bg-wedding-green" />
+              <span className="h-px w-12 bg-wedding-green" />
             </div>
           </ScrollReveal>
         )}

@@ -34,16 +34,16 @@ export function TravelSection() {
         <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {ACCOMMODATIONS.map((hotel, index) => (
             <StaggerItem key={index}>
-              <Card className="h-full bg-white border-wedding-shade-lightest hover:shadow-md transition-shadow">
+              <Card className="h-full bg-wedding-green-light/30 border-wedding-green/20 hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-lg font-semibold text-wedding-black">
                       {hotel.name}
                     </CardTitle>
-                    <Hotel className="h-5 w-5 text-wedding-amber" />
+                    <Hotel className="h-5 w-5 text-wedding-green" />
                   </div>
                   {hotel.priceRange && (
-                    <Badge variant="secondary" className="w-fit bg-wedding-accent/30 text-wedding-black-light">
+                    <Badge variant="secondary" className="w-fit bg-wedding-green-light text-wedding-black-light">
                       {hotel.priceRange}
                     </Badge>
                   )}
@@ -61,7 +61,7 @@ export function TravelSection() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full border-wedding-amber text-wedding-amber hover:bg-wedding-amber hover:text-white cursor-pointer"
+                        className="w-full border-wedding-green text-wedding-green hover:bg-wedding-green hover:text-white cursor-pointer"
                         asChild
                       >
                         <a
@@ -94,9 +94,9 @@ export function TravelSection() {
             const Icon = transportIcons[option.type];
             return (
               <StaggerItem key={index}>
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-white border border-wedding-shade-lightest">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-wedding-amber/10 flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-wedding-amber" />
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-wedding-green-light/30 border border-wedding-green/20">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-wedding-green/20 flex items-center justify-center">
+                    <Icon className="h-5 w-5 text-wedding-green" />
                   </div>
                   <div>
                     <h4 className="font-medium text-wedding-black">
@@ -110,7 +110,7 @@ export function TravelSection() {
                         href={option.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-wedding-amber hover:underline inline-flex items-center gap-1 mt-2"
+                        className="text-sm text-wedding-green hover:underline inline-flex items-center gap-1 mt-2"
                       >
                         Learn more <ExternalLink className="h-3 w-3" />
                       </a>

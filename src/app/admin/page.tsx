@@ -176,7 +176,7 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-wedding-bg">
-        <Loader2 className="h-8 w-8 animate-spin text-wedding-amber" />
+        <Loader2 className="h-8 w-8 animate-spin text-wedding-green" />
       </div>
     );
   }
@@ -204,7 +204,7 @@ export default function AdminPage() {
               </div>
               <Button
                 type="submit"
-                className="w-full bg-wedding-amber hover:bg-wedding-amber/90"
+                className="w-full bg-wedding-green hover:bg-wedding-green/90"
               >
                 Login
               </Button>
@@ -231,19 +231,19 @@ export default function AdminPage() {
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4 mb-8">
-          <Card>
+          <Card className="bg-wedding-green-light/30 border-wedding-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-wedding-shade">
                 Total RSVPs
               </CardTitle>
-              <Users className="h-4 w-4 text-wedding-amber" />
+              <Users className="h-4 w-4 text-wedding-green" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalRsvps}</div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-wedding-green-light/30 border-wedding-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-wedding-shade">
                 Attending
@@ -257,7 +257,7 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-wedding-green-light/30 border-wedding-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-wedding-shade">
                 Declined
@@ -271,12 +271,12 @@ export default function AdminPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-wedding-green-light/30 border-wedding-green/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-wedding-shade">
                 Total Guests
               </CardTitle>
-              <Utensils className="h-4 w-4 text-wedding-amber" />
+              <Utensils className="h-4 w-4 text-wedding-green" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalGuests}</div>
@@ -294,7 +294,7 @@ export default function AdminPage() {
               <div className="flex flex-wrap gap-4">
                 {Object.entries(mealCounts).map(([meal, count]) => (
                   <div key={meal} className="flex items-center gap-2">
-                    <Badge variant="secondary" className="capitalize">
+                    <Badge variant="secondary" className="capitalize bg-wedding-green-light">
                       {meal}
                     </Badge>
                     <span className="font-medium">{count}</span>
@@ -321,7 +321,7 @@ export default function AdminPage() {
               variant={filter === "all" ? "default" : "outline"}
               size="sm"
               onClick={() => setFilter("all")}
-              className={filter === "all" ? "bg-wedding-amber" : ""}
+              className={filter === "all" ? "bg-wedding-green" : ""}
             >
               All
             </Button>

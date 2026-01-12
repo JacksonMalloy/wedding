@@ -52,7 +52,7 @@ export interface StoryMilestone {
   date: string;
   title: string;
   description: string;
-  image?: string;
+  images?: string[];
 }
 
 // Registry Types

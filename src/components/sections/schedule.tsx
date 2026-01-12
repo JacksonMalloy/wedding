@@ -15,7 +15,7 @@ export function ScheduleSection() {
     >
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-wedding-amber/30 -translate-x-1/2" />
+        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-wedding-green/30 -translate-x-1/2" />
 
         <StaggerContainer className="space-y-8 md:space-y-12">
           {SCHEDULE_EVENTS.map((event, index) => (
@@ -27,7 +27,7 @@ export function ScheduleSection() {
               >
                 {/* Timeline dot */}
                 <div className="absolute left-4 md:left-1/2 top-0 -translate-x-1/2 z-10">
-                  <div className="h-3 w-3 rounded-full bg-wedding-amber ring-4 ring-wedding-bg" />
+                  <div className="h-3 w-3 rounded-full bg-wedding-green ring-4 ring-wedding-bg" />
                 </div>
 
                 {/* Content */}
@@ -37,9 +37,9 @@ export function ScheduleSection() {
                   }`}
                 >
                   <ScrollReveal>
-                    <div className="bg-wedding-bg rounded-lg p-6 shadow-sm border border-wedding-shade-lightest">
+                    <div className="bg-wedding-green-light/30 rounded-lg p-6 shadow-sm border border-wedding-green/20">
                       <div
-                        className={`flex items-center gap-2 text-wedding-amber mb-2 ${
+                        className={`flex items-center gap-2 text-wedding-green mb-2 ${
                           index % 2 === 0 ? "md:justify-end" : ""
                         }`}
                       >
