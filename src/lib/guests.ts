@@ -255,35 +255,21 @@ export const PARTIES: Party[] = [
   {
     id: "wave2-rick",
     group: "second-wave",
-    members: [{ id: "rick-wave2", first: "Rick", last: "" }], // TODO surname
+    members: [{ id: "rick-wave2", first: "Rick", last: "" }, { id: "judy-wave2", first: "Judy", last: "" }], // TODO surname
   },
-  {
-    id: "wave2-judy",
-    group: "second-wave",
-    members: [{ id: "judy-wave2", first: "Judy", last: "" }], // TODO surname
-  },
+
   {
     id: "wave2-rob",
     group: "second-wave",
-    members: [{ id: "rob-wave2", first: "Rob", last: "" }], // TODO surname
+    members: [{ id: "rob-wave2", first: "Rob", last: "" }, { id: "elly-wave2", first: "Elly", last: "" }], // TODO surname
   },
-  {
-    id: "wave2-elly",
-    group: "second-wave",
-    members: [{ id: "elly-wave2", first: "Elly", last: "" }], // TODO surname
-  },
+
   {
     id: "wave2-nisha",
     group: "second-wave",
-    members: [{ id: "nisha-wave2", first: "Nisha", last: "" }], // TODO surname
+    members: [{ id: "nisha-wave2", first: "Nisha", last: "" }, { id: "deepik-wave2", first: "Deepik", last: "" }], // TODO surname
   },
-  {
-    id: "wave2-deepik",
-    group: "second-wave",
-    members: [{ id: "deepik-wave2", first: "Deepik", last: "" }], // TODO surname
-  },
-  // TODO: "Alex's plus one" — unclear if this is a +1 for Alex Selkirk in the
-  // main list, or someone else. Keeping as standalone for now.
+
   {
     id: "wave2-alex-plus-one",
     group: "second-wave",
@@ -297,7 +283,7 @@ export const PARTIES: Party[] = [
     ],
   },
 
-  // ── Reception only ────────────────────────────────────────────────────────
+  // ── 3rd wave ────────────────────────────────────────────────────────
 
   {
     id: "reception-alexandra",
