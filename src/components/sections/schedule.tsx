@@ -39,7 +39,7 @@ export function ScheduleSection() {
                   <ScrollReveal>
                     <div className="bg-wedding-green-light/30 rounded-lg p-6 shadow-sm border border-wedding-green/20">
                       <div
-                        className={`flex items-center gap-2 text-wedding-green mb-2 ${
+                        className={`flex items-center gap-2 text-wedding-black-light mb-2 ${
                           index % 2 === 0 ? "md:justify-end" : ""
                         }`}
                       >

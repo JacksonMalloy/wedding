@@ -291,10 +291,7 @@ export const FAQ_ITEMS: FAQItem[] = [
 // Meal Options
 export const MEAL_OPTIONS: { value: MealPreference; label: string }[] = [
   { value: "beef", label: "Beef" },
-  { value: "chicken", label: "Chicken" },
-  { value: "fish", label: "Fish" },
   { value: "vegetarian", label: "Vegetarian" },
-  { value: "vegan", label: "Vegan" },
 ];
 
 // Contact Info

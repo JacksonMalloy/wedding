@@ -1,19 +1,3 @@
-// RSVP Types
-export interface RSVP {
-  id: string;
-  created_at: string;
-  updated_at?: string;
-  name: string;
-  email: string;
-  attending: boolean;
-  guest_count: number;
-  meal_preference: string | null;
-  dietary_restrictions: string | null;
-  special_requests: string | null;
-}
-
-export type RSVPInsert = Omit<RSVP, "id" | "created_at" | "updated_at">;
-
 // Navigation Types
 export interface NavItem {
   id: string;
@@ -80,4 +64,4 @@ export type SectionId =
   | "details";
 
 // Meal Preferences
-export type MealPreference = "beef" | "chicken" | "vegetarian" | "vegan" | "fish";
+export type MealPreference = "beef" | "vegetarian";

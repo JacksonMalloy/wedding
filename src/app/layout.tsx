@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Monsieur_La_Doulaise, Marcellus_SC } from "next/font/google";
+import { Parisienne, Marcellus_SC } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/navigation";
 import { Toaster } from "@/components/ui/sonner";
 
-const monsieurLaDoulaise = Monsieur_La_Doulaise({
-  variable: "--font-monsieur-la-doulaise",
+const parisienne = Parisienne({
+  variable: "--font-parisienne",
   subsets: ["latin"],
   weight: "400",
   display: "swap",
@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${monsieurLaDoulaise.variable} ${marcellusSC.variable} font-sans antialiased`}>
+      <body className={`${parisienne.variable} ${marcellusSC.variable} font-sans antialiased`}>
         <Navbar />
         <main>{children}</main>
         <Toaster position="top-center" richColors />
