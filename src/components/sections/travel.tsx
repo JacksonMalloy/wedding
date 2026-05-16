@@ -6,7 +6,16 @@ import { ScrollReveal, StaggerContainer, StaggerItem, ScaleOnHover } from "@/com
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { ACCOMMODATIONS, TRANSPORT_OPTIONS } from "@/lib/constants";
+import type { BookingDetails } from "@/types";
 
 const transportIcons = {
   airport: Plane,
@@ -15,6 +24,138 @@ const transportIcons = {
   rideshare: Car,
   rental: Car,
 };
+
+function BookingDrawer({
+  hotelName,
+  details,
+}: {
+  hotelName: string;
+  details: BookingDetails;
+}) {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full border-wedding-green text-wedding-green hover:bg-wedding-green hover:text-white cursor-pointer"
+        >
+          Book Now <ExternalLink className="ml-2 h-3 w-3" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="bottom"
+        className="max-h-[90vh] overflow-y-auto rounded-t-2xl bg-wedding-bg"
+      >
+        <SheetHeader className="border-b border-wedding-green/20 pb-4">
+          <SheetTitle className="font-serif text-2xl text-wedding-black">
+            Book at {hotelName}
+          </SheetTitle>
+          <SheetDescription className="text-wedding-shade">
+            Reserved room block for the Coates/Malloy Wedding weekend.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="mx-auto w-full max-w-2xl space-y-6 p-4 text-sm text-wedding-shade">
+          <section>
+            <h3 className="font-semibold text-wedding-black mb-2">
+              Dates &amp; Rates
+            </h3>
+            <ul className="space-y-1.5">
+              {details.rates.map((rate) => (
+                <li key={rate.date}>
+                  <span className="font-medium text-wedding-black">
+                    {rate.date}
+                  </span>
+                  {" — "}
+                  {rate.rooms}
+                </li>
+              ))}
+            </ul>
+            {details.ratesNote && (
+              <p className="mt-2 text-xs text-wedding-shade-light">
+                {details.ratesNote}
+              </p>
+            )}
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-wedding-black mb-1">
+              Reservation Deadline
+            </h3>
+            <p>{details.deadline}</p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-wedding-black mb-2">
+              How to Book
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <p>
+                  <span className="font-medium text-wedding-black">
+                    Online:
+                  </span>{" "}
+                  <a
+                    href={details.onlineUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-wedding-green hover:underline inline-flex items-center gap-1 break-all"
+                  >
+                    {details.onlineUrl}
+                    <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                  </a>
+                </p>
+                <p className="mt-1 text-xs text-wedding-shade-light">
+                  Enter Group ID{" "}
+                  <span className="font-mono font-semibold text-wedding-black">
+                    {details.groupId}
+                  </span>{" "}
+                  in the &quot;Group ID&quot; box.
+                </p>
+              </div>
+              <div>
+                <p>
+                  <span className="font-medium text-wedding-black">
+                    By phone:
+                  </span>{" "}
+                  <a
+                    href={`tel:${details.phone.replace(/[^\d+]/g, "")}`}
+                    className="text-wedding-green hover:underline"
+                  >
+                    {details.phone}
+                  </a>
+                </p>
+                <p className="mt-1 text-xs text-wedding-shade-light">
+                  {details.phoneInstructions}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {details.paymentNote && (
+            <p className="text-xs text-wedding-shade-light border-t border-wedding-green/20 pt-4">
+              {details.paymentNote}
+            </p>
+          )}
+
+          <Button
+            asChild
+            className="w-full bg-wedding-green text-white hover:bg-wedding-green/90"
+          >
+            <a
+              href={details.onlineUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Go to Booking Site <ExternalLink className="ml-2 h-3 w-3" />
+            </a>
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
 export function TravelSection() {
   return (
@@ -56,105 +197,33 @@ export function TravelSection() {
                     <p>{hotel.address}</p>
                     {hotel.phone && <p>{hotel.phone}</p>}
                   </div>
-                  {hotel.bookingDetails && (
-                    <div className="space-y-4 rounded-md border border-wedding-green/30 bg-white/60 p-4 text-sm text-wedding-shade">
-                      <div>
-                        <p className="font-semibold text-wedding-black mb-2">
-                          Dates &amp; Rates
-                        </p>
-                        <ul className="space-y-1.5">
-                          {hotel.bookingDetails.rates.map((rate) => (
-                            <li key={rate.date}>
-                              <span className="font-medium text-wedding-black">
-                                {rate.date}
-                              </span>
-                              {" — "}
-                              {rate.rooms}
-                            </li>
-                          ))}
-                        </ul>
-                        {hotel.bookingDetails.ratesNote && (
-                          <p className="mt-2 text-xs text-wedding-shade-light">
-                            {hotel.bookingDetails.ratesNote}
-                          </p>
-                        )}
-                      </div>
 
-                      <div>
-                        <p className="font-semibold text-wedding-black mb-1">
-                          Reservation Deadline
-                        </p>
-                        <p>{hotel.bookingDetails.deadline}</p>
-                      </div>
-
-                      <div>
-                        <p className="font-semibold text-wedding-black mb-2">
-                          How to Book
-                        </p>
-                        <div className="space-y-2">
-                          <p>
-                            <span className="font-medium text-wedding-black">
-                              Online:
-                            </span>{" "}
-                            <a
-                              href={hotel.bookingDetails.onlineUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-wedding-green hover:underline inline-flex items-center gap-1 break-all"
-                            >
-                              {hotel.bookingDetails.onlineUrl}
-                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                            </a>
-                            <span className="block mt-1 text-xs text-wedding-shade-light">
-                              Enter Group ID{" "}
-                              <span className="font-mono font-semibold text-wedding-black">
-                                {hotel.bookingDetails.groupId}
-                              </span>{" "}
-                              in the &quot;Group ID&quot; box.
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-medium text-wedding-black">
-                              By phone:
-                            </span>{" "}
-                            <a
-                              href={`tel:${hotel.bookingDetails.phone.replace(/[^\d+]/g, "")}`}
-                              className="text-wedding-green hover:underline"
-                            >
-                              {hotel.bookingDetails.phone}
-                            </a>
-                            <span className="block mt-1 text-xs text-wedding-shade-light">
-                              {hotel.bookingDetails.phoneInstructions}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-
-                      {hotel.bookingDetails.paymentNote && (
-                        <p className="text-xs text-wedding-shade-light">
-                          {hotel.bookingDetails.paymentNote}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {hotel.bookingUrl && !hotel.bookingDetails && (
+                  {hotel.bookingDetails ? (
                     <ScaleOnHover scale={1.05}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-wedding-green text-wedding-green hover:bg-wedding-green hover:text-white cursor-pointer"
-                        asChild
-                      >
-                        <a
-                          href={hotel.bookingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Book Now <ExternalLink className="ml-2 h-3 w-3" />
-                        </a>
-                      </Button>
+                      <BookingDrawer
+                        hotelName={hotel.name}
+                        details={hotel.bookingDetails}
+                      />
                     </ScaleOnHover>
+                  ) : (
+                    hotel.bookingUrl && (
+                      <ScaleOnHover scale={1.05}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-wedding-green text-wedding-green hover:bg-wedding-green hover:text-white cursor-pointer"
+                          asChild
+                        >
+                          <a
+                            href={hotel.bookingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Book Now <ExternalLink className="ml-2 h-3 w-3" />
+                          </a>
+                        </Button>
+                      </ScaleOnHover>
+                    )
                   )}
                 </CardContent>
               </Card>
