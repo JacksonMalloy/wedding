@@ -8,7 +8,7 @@ interface SectionWrapperProps {
   id: string;
   title?: string;
   subtitle?: string;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   background?: "default" | "alternate" | "accent";
   fullHeight?: boolean;
