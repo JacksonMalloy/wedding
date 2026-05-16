@@ -56,7 +56,89 @@ export function TravelSection() {
                     <p>{hotel.address}</p>
                     {hotel.phone && <p>{hotel.phone}</p>}
                   </div>
-                  {hotel.bookingUrl && (
+                  {hotel.bookingDetails && (
+                    <div className="space-y-4 rounded-md border border-wedding-green/30 bg-white/60 p-4 text-sm text-wedding-shade">
+                      <div>
+                        <p className="font-semibold text-wedding-black mb-2">
+                          Dates &amp; Rates
+                        </p>
+                        <ul className="space-y-1.5">
+                          {hotel.bookingDetails.rates.map((rate) => (
+                            <li key={rate.date}>
+                              <span className="font-medium text-wedding-black">
+                                {rate.date}
+                              </span>
+                              {" — "}
+                              {rate.rooms}
+                            </li>
+                          ))}
+                        </ul>
+                        {hotel.bookingDetails.ratesNote && (
+                          <p className="mt-2 text-xs text-wedding-shade-light">
+                            {hotel.bookingDetails.ratesNote}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <p className="font-semibold text-wedding-black mb-1">
+                          Reservation Deadline
+                        </p>
+                        <p>{hotel.bookingDetails.deadline}</p>
+                      </div>
+
+                      <div>
+                        <p className="font-semibold text-wedding-black mb-2">
+                          How to Book
+                        </p>
+                        <div className="space-y-2">
+                          <p>
+                            <span className="font-medium text-wedding-black">
+                              Online:
+                            </span>{" "}
+                            <a
+                              href={hotel.bookingDetails.onlineUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-wedding-green hover:underline inline-flex items-center gap-1 break-all"
+                            >
+                              {hotel.bookingDetails.onlineUrl}
+                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                            </a>
+                            <span className="block mt-1 text-xs text-wedding-shade-light">
+                              Enter Group ID{" "}
+                              <span className="font-mono font-semibold text-wedding-black">
+                                {hotel.bookingDetails.groupId}
+                              </span>{" "}
+                              in the &quot;Group ID&quot; box.
+                            </span>
+                          </p>
+                          <p>
+                            <span className="font-medium text-wedding-black">
+                              By phone:
+                            </span>{" "}
+                            <a
+                              href={`tel:${hotel.bookingDetails.phone.replace(/[^\d+]/g, "")}`}
+                              className="text-wedding-green hover:underline"
+                            >
+                              {hotel.bookingDetails.phone}
+                            </a>
+                            <span className="block mt-1 text-xs text-wedding-shade-light">
+                              {hotel.bookingDetails.phoneInstructions}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {hotel.bookingDetails.paymentNote && (
+                        <p className="text-xs text-wedding-shade-light">
+                          {hotel.bookingDetails.paymentNote}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {hotel.bookingUrl && !hotel.bookingDetails && (
                     <ScaleOnHover scale={1.05}>
                       <Button
                         variant="outline"

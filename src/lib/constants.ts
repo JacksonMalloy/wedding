@@ -110,12 +110,35 @@ export const ACCOMMODATIONS: Accommodation[] = [
   {
     name: "Pillar and Post",
     description:
-      "Our wedding venue hotel with a reserved room block for guests. Book by July 27, 2026 for special rates.",
-    address: "48 John Street West",
+      "We've reserved a block of rooms at Pillar & Post for our wedding weekend.",
+    address: "48 John St., Niagara-on-the-Lake, ON L0S 1J0",
     phone: "(905) 468-2123",
     website: "https://www.vintage-hotels.com/pillar-and-post",
-    bookingUrl: "https://www.vintage-hotels.com/pillar-and-post",
+    bookingUrl: "https://www.vintage-hotels.com/reservations.htm",
     priceRange: "Room block rates available",
+    bookingDetails: {
+      rates: [
+        {
+          date: "Friday, September 25, 2026",
+          rooms: "Traditional Room: $430 / Premium Room: $430",
+        },
+        {
+          date: "Saturday, September 26, 2026",
+          rooms: "Traditional Room: $500 / Premium Room: $500",
+        },
+      ],
+      ratesNote:
+        "Single or double occupancy, plus taxes and daily resort fee.",
+      deadline:
+        "11:59 p.m. on July 27, 2026 — this deadline will not be extended, and rooms aren't guaranteed after that, so please book early.",
+      onlineUrl: "https://www.vintage-hotels.com/reservations.htm",
+      groupId: "4063233",
+      phone: "1-888-669-5566",
+      phoneInstructions:
+        "Ask for the Reservation Line and mention the Coates/Malloy Wedding.",
+      paymentNote:
+        "A major credit card is required to guarantee your reservation.",
+    },
   },
   {
     name: "Prince of Wales Hotel",

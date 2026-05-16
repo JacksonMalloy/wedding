@@ -13,6 +13,22 @@ export interface TimelineEvent {
 }
 
 // Travel/Accommodation Types
+export interface BookingRate {
+  date: string;
+  rooms: string;
+}
+
+export interface BookingDetails {
+  rates: BookingRate[];
+  ratesNote?: string;
+  deadline: string;
+  onlineUrl: string;
+  groupId: string;
+  phone: string;
+  phoneInstructions: string;
+  paymentNote?: string;
+}
+
 export interface Accommodation {
   name: string;
   description: string;
@@ -22,6 +38,7 @@ export interface Accommodation {
   bookingUrl?: string;
   priceRange?: string;
   image?: string;
+  bookingDetails?: BookingDetails;
 }
 
 export interface TransportOption {
