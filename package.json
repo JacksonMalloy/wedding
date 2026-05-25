@@ -35,7 +35,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@pinpoint/next": "file:/Users/jacksonmalloy/code/pinpoint/packages/next/pinpoint-next-0.0.16.tgz",
+    "@pinpoint/next": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
