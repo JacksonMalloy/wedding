@@ -237,6 +237,7 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-marcellus-sc, "Marcellus SC"), Georgia, ui-serif, serif;
   line-height: 1.5;
+  overflow-x: clip;
 }
 
 /* Carry the linen texture through wedding-bg sections so it reads
