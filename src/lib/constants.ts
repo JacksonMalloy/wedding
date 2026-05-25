@@ -269,11 +269,6 @@ export const REGISTRY_LINKS: RegistryLink[] = [
 // FAQ Items
 export const FAQ_ITEMS: FAQItem[] = [
   {
-    question: "What is the dress code?",
-    answer:
-      "Cocktail attire. We suggest elegant dresses or jumpsuits for ladies and suits or dress pants with a button-down for gentlemen.",
-  },
-  {
     question: "Can I bring a plus one?",
     answer:
       "Due to venue capacity, we can only accommodate guests named on the invitation. Please refer to your RSVP for the number of seats reserved in your honor.",
