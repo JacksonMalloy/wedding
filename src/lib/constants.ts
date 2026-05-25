@@ -55,7 +55,7 @@ export const WEDDING_DETAILS = {
 
 // Important Dates
 export const IMPORTANT_DATES = {
-  rsvpDeadline: "September 1, 2026",
+  rsvpDeadline: "July 27, 2026",
   hotelBlockCutoff: "July 27, 2026",
 };
 
@@ -92,15 +92,9 @@ export const SCHEDULE_EVENTS: TimelineEvent[] = [
     location: "The Olde Library",
   },
   {
-    time: "11:00 PM",
-    title: "Late Night Bites",
-    description: "Late night snacks and dancing continues",
-    location: "The Olde Library",
-  },
-  {
-    time: "1:00 AM",
-    title: "Last Dance",
-    description: "Festivities conclude",
+    time: "8:00 PM - 11:00 PM",
+    title: "Dancing & Party",
+    description: "Dancing, party, and open bar",
     location: "The Olde Library",
   },
 ];
@@ -184,7 +178,7 @@ export const TRANSPORT_OPTIONS: TransportOption[] = [
 // Our Story
 export const STORY_MILESTONES: StoryMilestone[] = [
   {
-    date: "???",
+    date: "March 11, 2026",
     title: "Déjà Vu?",
     description:
       "Jackson swore they had matched on a dating app before. Delina had no memory of this whatsoever. To this day, he insists it happened.",

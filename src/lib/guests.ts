@@ -145,7 +145,7 @@ export const PARTIES: Party[] = [
   {
     id: "moffat",
     group: "main",
-    members: [{ id: "hannah-moffat", first: "Hannah", last: "Moffat" }, { id: "blake-warpole", first: "Blake", last: "Warpole" }],
+    members: [{ id: "hannah-moffat", first: "Hannah", last: "Moffatt" }, { id: "blake-warpole", first: "Blake", last: "Warpole" }],
   },
   // TODO confirm: Kelly Jackson appeared twice in the source list — deduped here
   // and grouped with the rest of the Jacksons.

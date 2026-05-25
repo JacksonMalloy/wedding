@@ -5,6 +5,7 @@ import {
   ScheduleSection,
   TravelSection,
   StorySection,
+  JapanSection,
   RegistrySection,
   RSVPSection,
   DetailsSection,
@@ -18,6 +19,7 @@ export default function Home() {
       <CoupleSection />
       <UsSection />
       <StorySection />
+      <JapanSection />
       <ScheduleSection />
       <TravelSection />
       <RegistrySection />

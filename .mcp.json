@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "pinpoint": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/Users/jacksonmalloy/code/pinpoint/packages/mcp/dist/index.js"
+      ],
+      "env": {
+        "PINPOINT_PROJECT_ROOT": "/Users/jacksonmalloy/code/wedding"
+      }
+    }
+  }
+}

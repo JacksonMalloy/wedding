@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Parisienne, Marcellus_SC } from "next/font/google";
 import "./globals.css";
+import { Pinpoint } from "@pinpoint/next";
 import { Navbar } from "@/components/navigation";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -39,6 +40,7 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <Toaster position="top-center" richColors />
+        <Pinpoint />
       </body>
     </html>
   );

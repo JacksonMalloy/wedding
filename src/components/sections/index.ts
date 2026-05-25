@@ -5,6 +5,7 @@ export { UsSection } from "./us";
 export { ScheduleSection } from "./schedule";
 export { TravelSection } from "./travel";
 export { StorySection } from "./story";
+export { JapanSection } from "./japan";
 export { RegistrySection } from "./registry";
 export { RSVPSection } from "./rsvp";
 export { DetailsSection } from "./details";

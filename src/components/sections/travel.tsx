@@ -167,9 +167,12 @@ export function TravelSection() {
       {/* Accommodations */}
       <div className="mb-16">
         <ScrollReveal>
-          <h3 className="text-2xl font-semibold text-wedding-black mb-6 text-center">
+          <h3 className="text-2xl font-semibold text-wedding-black mb-3 text-center">
             Where to Stay
           </h3>
+          <p className="mx-auto mb-6 max-w-2xl rounded-lg border border-wedding-lime/40 bg-wedding-lime/10 px-4 py-3 text-center text-sm font-medium text-wedding-lime">
+            Our room blocks are filling up fast — please book your hotel as soon as possible to secure a room.
+          </p>
         </ScrollReveal>
 
         <StaggerContainer className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

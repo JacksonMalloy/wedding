@@ -34,16 +34,40 @@ export function DetailsSection() {
               </div>
               <div className="space-y-4 text-wedding-shade">
                 <p>
-                  <strong className="text-wedding-black">Cocktail Attire</strong>
+                  <strong className="text-wedding-black">Business Casual</strong>
                 </p>
                 <p className="text-sm">
-                  For ladies, we suggest elegant cocktail dresses, jumpsuits, or dressy
-                  separates. For gentlemen, suits or dress pants with a button-down
-                  shirt are perfect.
+                  Wear whatever makes you most comfortable.
                 </p>
                 <p className="text-sm text-wedding-shade-light">
                   The ceremony and reception will be held indoors at The Olde Library.
                 </p>
+                <div className="pt-2">
+                  <p className="text-sm">
+                    For anyone curious, here are our wedding colours:
+                  </p>
+                  <ul className="mt-3 flex flex-wrap gap-3">
+                    {[
+                      { name: "Pink", hex: "#F6EBE7" },
+                      { name: "Green", hex: "#B7B7A4" },
+                      { name: "Orange", hex: "#D29A89" },
+                      { name: "Dark Blue", hex: "#6D8799" },
+                      { name: "Light Blue", hex: "#B6C5D5" },
+                    ].map((color) => (
+                      <li
+                        key={color.hex}
+                        className="flex items-center gap-2 text-xs text-wedding-shade-light"
+                      >
+                        <span
+                          aria-hidden
+                          className="h-5 w-5 rounded-full border border-wedding-green/30"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span>{color.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </ScrollReveal>
