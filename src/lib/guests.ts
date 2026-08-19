@@ -254,12 +254,14 @@ export const PARTIES: Party[] = [
 
   {
     id: "wave2-rick",
+    label: "Rick & Judy",
     group: "second-wave",
     members: [{ id: "rick-wave2", first: "Rick", last: "" }, { id: "judy-wave2", first: "Judy", last: "" }], // TODO surname
   },
 
   {
     id: "wave2-rob",
+    label: "Rob & Elly",
     group: "second-wave",
     members: [{ id: "rob-wave2", first: "Rob", last: "" }, { id: "elly-wave2", first: "Elly", last: "" }], // TODO surname
   },
