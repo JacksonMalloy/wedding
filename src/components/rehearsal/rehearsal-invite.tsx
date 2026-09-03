@@ -1,27 +1,54 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
-import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
+import { FormEvent, useMemo, useState } from "react";
+import {
+  CalendarDays,
+  Check,
+  ChevronsUpDown,
+  Clock3,
+  MapPin,
+} from "lucide-react";
+import {
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { REHEARSAL_DETAILS } from "@/lib/rehearsal-details";
+import {
+  REHEARSAL_GUEST_BY_ID,
+  REHEARSAL_GUESTS,
+  REHEARSAL_PARTY_BY_ID,
+  type RehearsalGuest,
+} from "@/lib/rehearsal-guests";
 
 type Attendance = "" | "yes" | "no";
 
 type FormState = {
-  name: string;
+  partyId: string;
+  primaryGuestId: string;
   email: string;
   attending: Attendance;
-  partySize: string;
+  attendeeIds: string[];
   dietaryRestrictions: string;
   message: string;
   website: string;
 };
 
 const INITIAL_FORM: FormState = {
-  name: "",
+  partyId: "",
+  primaryGuestId: "",
   email: "",
   attending: "",
-  partySize: "1",
+  attendeeIds: [],
   dietaryRestrictions: "",
   message: "",
   website: "",
@@ -32,9 +59,30 @@ const fieldClassName =
 
 export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [search, setSearch] = useState("");
+  const [isGuestPickerOpen, setIsGuestPickerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
+
+  const primaryGuest = form.primaryGuestId
+    ? REHEARSAL_GUEST_BY_ID[form.primaryGuestId]
+    : undefined;
+  const party = form.partyId
+    ? REHEARSAL_PARTY_BY_ID[form.partyId]
+    : undefined;
+
+  const matchingGuests = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return [];
+
+    return REHEARSAL_GUESTS.filter((guest) =>
+      [guest.displayName, ...(guest.searchAliases ?? [])]
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [search]);
 
   const updateField = <K extends keyof FormState>(
     field: K,
@@ -43,20 +91,60 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const selectGuest = (guest: RehearsalGuest) => {
+    setForm((current) => ({
+      ...current,
+      partyId: guest.partyId,
+      primaryGuestId: guest.id,
+      attending: "",
+      attendeeIds: [],
+      dietaryRestrictions: "",
+    }));
+    setSearch("");
+    setError("");
+    setIsGuestPickerOpen(false);
+  };
+
+  const setAttendance = (attending: Exclude<Attendance, "">) => {
+    setForm((current) => ({
+      ...current,
+      attending,
+      attendeeIds:
+        attending === "yes" && current.primaryGuestId
+          ? [current.primaryGuestId]
+          : [],
+      dietaryRestrictions:
+        attending === "yes" ? current.dietaryRestrictions : "",
+    }));
+  };
+
+  const toggleAttendee = (guestId: string) => {
+    if (guestId === form.primaryGuestId) return;
+
+    setForm((current) => ({
+      ...current,
+      attendeeIds: current.attendeeIds.includes(guestId)
+        ? current.attendeeIds.filter((id) => id !== guestId)
+        : [...current.attendeeIds, guestId],
+    }));
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    if (!primaryGuest || !party) {
+      setError("Please find and select your name before submitting.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/rehearsal-rsvp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          inviteToken,
-          partySize: Number(form.partySize),
-        }),
+        body: JSON.stringify({ ...form, inviteToken }),
       });
 
       const result = (await response.json()) as { error?: string };
@@ -88,7 +176,7 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
               fill
               priority
               sizes="(min-width: 1024px) 43vw, 100vw"
-              className="object-cover object-center scale-[1.02]"
+              className="scale-[1.02] object-cover object-center"
             />
           </div>
           <div className="absolute inset-0 bg-[#14292B]/16" aria-hidden="true" />
@@ -167,7 +255,7 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                     <Check className="size-4" aria-hidden="true" />
                   </div>
                   <h2 className="mt-6 font-serif text-4xl text-[#14292B]">
-                    Thank you, {form.name.split(" ")[0]}.
+                    Thank you, {primaryGuest?.displayName.split(" ")[0]}.
                   </h2>
                   <p className="mt-3 max-w-lg leading-7 text-[#1D211F]/68">
                     {form.attending === "yes"
@@ -188,46 +276,79 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                   </div>
 
                   <form className="mt-9 space-y-8" onSubmit={handleSubmit}>
-                    <fieldset>
-                      <legend className="text-xs tracking-[0.2em] text-[#14292B]/70 uppercase">
-                        Will you join us?
-                      </legend>
-                      <div className="mt-4 grid grid-cols-2 gap-3">
-                        {([
-                          ["yes", "Joyfully accepts"],
-                          ["no", "Sadly declines"],
-                        ] as const).map(([value, label]) => (
-                          <label key={value} className="cursor-pointer">
-                            <input
-                              className="peer sr-only"
-                              type="radio"
-                              name="attending"
-                              value={value}
-                              checked={form.attending === value}
-                              onChange={() => updateField("attending", value)}
-                              required
-                            />
-                            <span className="flex min-h-14 items-center justify-center border border-[#14292B]/25 px-3 text-center text-sm transition-colors peer-checked:border-[#14292B] peer-checked:bg-[#14292B] peer-checked:text-[#F4EFE6] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-[#14292B]">
-                              {label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </fieldset>
-
                     <div className="grid gap-7 sm:grid-cols-2">
-                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                        Your name
-                        <input
-                          className={fieldClassName}
-                          name="name"
-                          autoComplete="name"
-                          value={form.name}
-                          onChange={(event) => updateField("name", event.target.value)}
-                          placeholder="First and last name"
-                          required
-                        />
-                      </label>
+                      <div>
+                        <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
+                          Find your name
+                        </label>
+                        <Popover open={isGuestPickerOpen} onOpenChange={setIsGuestPickerOpen}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className={`${fieldClassName} flex items-center justify-between gap-3 text-left normal-case`}
+                              aria-label="Find your name"
+                            >
+                              <span className={primaryGuest ? "" : "text-[#1D211F]/38"}>
+                                {primaryGuest?.displayName ?? "Search the guest list"}
+                              </span>
+                              <ChevronsUpDown className="size-4 shrink-0 text-[#14292B]/50" aria-hidden="true" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[var(--radix-popover-trigger-width)] rounded-none border-[#14292B]/25 bg-[#F4EFE6] p-0 text-[#1D211F]"
+                          >
+                            <Command shouldFilter={false} className="rounded-none bg-[#F4EFE6] text-[#1D211F]">
+                              <CommandInput
+                                placeholder="Type your name…"
+                                value={search}
+                                onValueChange={setSearch}
+                                className="text-sm"
+                              />
+                              <CommandList>
+                                {!search.trim() ? (
+                                  <p className="px-4 py-6 text-center text-sm text-[#1D211F]/55">
+                                    Start typing to find your invitation.
+                                  </p>
+                                ) : matchingGuests.length === 0 ? (
+                                  <p className="px-4 py-6 text-center text-sm text-[#1D211F]/55">
+                                    No match found. Please check the name on your invitation.
+                                  </p>
+                                ) : (
+                                  <CommandGroup>
+                                    {matchingGuests.map((guest) => (
+                                      <CommandItem
+                                        key={guest.id}
+                                        value={guest.id}
+                                        onSelect={() => selectGuest(guest)}
+                                        className="rounded-none px-3 py-3 data-[selected=true]:bg-[#14292B] data-[selected=true]:text-[#F4EFE6]"
+                                      >
+                                        <Check
+                                          className={
+                                            primaryGuest?.id === guest.id
+                                              ? "opacity-100"
+                                              : "opacity-0"
+                                          }
+                                          aria-hidden="true"
+                                        />
+                                        <span>
+                                          <span className="block">{guest.displayName}</span>
+                                          {guest.partyLabel !== guest.displayName && (
+                                            <span className="mt-0.5 block text-xs opacity-65">
+                                              {guest.partyLabel}
+                                            </span>
+                                          )}
+                                        </span>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                )}
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
                       <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
                         Email
                         <input
@@ -243,33 +364,92 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                       </label>
                     </div>
 
+                    {primaryGuest && (
+                      <fieldset>
+                        <legend className="text-xs tracking-[0.2em] text-[#14292B]/70 uppercase">
+                          Will you join us?
+                        </legend>
+                        <div className="mt-4 grid grid-cols-2 gap-3">
+                          {([
+                            ["yes", "Joyfully accepts"],
+                            ["no", "Sadly declines"],
+                          ] as const).map(([value, label]) => (
+                            <label key={value} className="cursor-pointer">
+                              <input
+                                className="peer sr-only"
+                                type="radio"
+                                name="attending"
+                                value={value}
+                                checked={form.attending === value}
+                                onChange={() => setAttendance(value)}
+                                required
+                              />
+                              <span className="flex min-h-14 items-center justify-center border border-[#14292B]/25 px-3 text-center text-sm transition-colors peer-checked:border-[#14292B] peer-checked:bg-[#14292B] peer-checked:text-[#F4EFE6] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-[#14292B]">
+                                {label}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    )}
+
+                    {form.attending === "yes" && party && (
+                      <fieldset className="border-y border-[#14292B]/18 py-7">
+                        <legend className="px-0 text-xs tracking-[0.2em] text-[#14292B]/70 uppercase">
+                          Who will be attending?
+                        </legend>
+                        <p className="mt-2 text-sm leading-6 text-[#1D211F]/58">
+                          Your invitation is reserved for {party.label}. Select everyone who will join us.
+                        </p>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          {party.members.map((guest) => {
+                            const isPrimary = guest.id === form.primaryGuestId;
+                            const isSelected = form.attendeeIds.includes(guest.id);
+
+                            return (
+                              <div
+                                key={guest.id}
+                                className={`flex min-h-14 items-center gap-3 border px-4 py-3 transition-colors ${
+                                  isSelected
+                                    ? "border-[#14292B] bg-[#14292B]/6"
+                                    : "border-[#14292B]/20"
+                                }`}
+                              >
+                                <Checkbox
+                                  id={`rehearsal-attendee-${guest.id}`}
+                                  checked={isSelected}
+                                  disabled={isPrimary}
+                                  onCheckedChange={() => toggleAttendee(guest.id)}
+                                  className="border-[#14292B]/45 data-[state=checked]:border-[#14292B] data-[state=checked]:bg-[#14292B] data-[state=checked]:text-[#F4EFE6]"
+                                />
+                                <label
+                                  htmlFor={`rehearsal-attendee-${guest.id}`}
+                                  className={isPrimary ? "text-sm" : "cursor-pointer text-sm"}
+                                >
+                                  {guest.displayName}
+                                  {isPrimary && (
+                                    <span className="ml-2 text-xs text-[#1D211F]/48">(you)</span>
+                                  )}
+                                </label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
+                    )}
+
                     {form.attending === "yes" && (
-                      <div className="grid gap-7 sm:grid-cols-2">
-                        <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                          Number attending
-                          <select
-                            className={fieldClassName}
-                            name="partySize"
-                            value={form.partySize}
-                            onChange={(event) => updateField("partySize", event.target.value)}
-                          >
-                            {Array.from({ length: 10 }, (_, index) => index + 1).map((size) => (
-                              <option key={size} value={size}>{size}</option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                          Dietary notes
-                          <input
-                            className={fieldClassName}
-                            name="dietaryRestrictions"
-                            value={form.dietaryRestrictions}
-                            onChange={(event) => updateField("dietaryRestrictions", event.target.value)}
-                            placeholder="Optional"
-                            maxLength={500}
-                          />
-                        </label>
-                      </div>
+                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
+                        Dietary notes
+                        <input
+                          className={fieldClassName}
+                          name="dietaryRestrictions"
+                          value={form.dietaryRestrictions}
+                          onChange={(event) => updateField("dietaryRestrictions", event.target.value)}
+                          placeholder="Optional — include each guest’s name"
+                          maxLength={500}
+                        />
+                      </label>
                     )}
 
                     <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
