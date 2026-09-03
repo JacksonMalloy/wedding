@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, WEDDING_DETAILS } from "@/lib/constants";
@@ -11,10 +12,12 @@ import { ScaleOnHover } from "@/components/motion";
 import { MobileMenu } from "./mobile-menu";
 
 export function Navbar() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const activeSection = useActiveSection(NAV_ITEMS.map((item) => item.id));
   const scrollTo = useScrollTo();
+  const isPrivateInvitation = pathname.startsWith("/invite/");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +32,8 @@ export function Navbar() {
     scrollTo(id);
     setIsMobileMenuOpen(false);
   };
+
+  if (isPrivateInvitation) return null;
 
   return (
     <>
