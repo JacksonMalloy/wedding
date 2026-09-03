@@ -2,11 +2,8 @@ import { z } from "zod";
 
 export const rehearsalRsvpSchema = z.object({
   inviteToken: z.string().trim().min(16, "This invitation link is invalid"),
-  name: z
-    .string()
-    .trim()
-    .min(2, "Please enter your name")
-    .max(100, "Please keep your name under 100 characters"),
+  partyId: z.string().trim().min(1, "Please select your name"),
+  primaryGuestId: z.string().trim().min(1, "Please select your name"),
   email: z
     .string()
     .trim()
@@ -15,7 +12,7 @@ export const rehearsalRsvpSchema = z.object({
   attending: z.enum(["yes", "no"], {
     message: "Please let us know if you can attend",
   }),
-  partySize: z.coerce.number().int().min(1).max(10),
+  attendeeIds: z.array(z.string().trim().min(1)).max(10).default([]),
   dietaryRestrictions: z
     .string()
     .trim()
@@ -29,6 +26,22 @@ export const rehearsalRsvpSchema = z.object({
     .optional()
     .default(""),
   website: z.string().max(200).optional().default(""),
+}).superRefine((data, context) => {
+  if (data.attending === "yes" && data.attendeeIds.length === 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["attendeeIds"],
+      message: "Please select at least one attendee",
+    });
+  }
+
+  if (data.attending === "no" && data.attendeeIds.length > 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["attendeeIds"],
+      message: "A declined RSVP cannot include attendees",
+    });
+  }
 });
 
 export type RehearsalRsvpData = z.output<typeof rehearsalRsvpSchema>;

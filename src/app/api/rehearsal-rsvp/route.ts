@@ -6,6 +6,12 @@ import {
 } from "@/lib/rehearsal-access";
 import { REHEARSAL_DETAILS } from "@/lib/rehearsal-details";
 import {
+  REHEARSAL_GUEST_BY_ID,
+  REHEARSAL_PARTY_BY_ID,
+  type RehearsalGuest,
+  type RehearsalParty,
+} from "@/lib/rehearsal-guests";
+import {
   rehearsalRsvpSchema,
   type RehearsalRsvpData,
 } from "@/lib/validations/rehearsal-rsvp";
@@ -46,19 +52,28 @@ function detailsHtml(): string {
   `;
 }
 
-function organizerEmail(data: RehearsalRsvpData) {
+function organizerEmail(
+  data: RehearsalRsvpData,
+  party: RehearsalParty,
+  primaryGuest: RehearsalGuest,
+  attendees: RehearsalGuest[]
+) {
   const attending = data.attending === "yes";
   const subject = attending
-    ? `Rehearsal dinner RSVP — ${data.name}, ${data.partySize} attending`
-    : `Rehearsal dinner RSVP — ${data.name} declined`;
+    ? `Rehearsal dinner RSVP — ${party.label}, ${attendees.length} attending`
+    : `Rehearsal dinner RSVP — ${party.label} declined`;
   const rows: Array<[string, string]> = [
-    ["Guest", data.name],
+    ["Reply from", primaryGuest.displayName],
+    ["Invitation", party.label],
     ["Email", data.email],
     ["Attending", attending ? "Yes" : "No"],
   ];
 
   if (attending) {
-    rows.push(["Party size", String(data.partySize)]);
+    rows.push([
+      "Attendees",
+      attendees.map((attendee) => attendee.displayName).join(", "),
+    ]);
     rows.push(["Dietary notes", data.dietaryRestrictions]);
   }
   rows.push(["Message", data.message]);
@@ -68,7 +83,7 @@ function organizerEmail(data: RehearsalRsvpData) {
     html: `
       <main style="max-width:620px;margin:0 auto;padding:36px 24px;font-family:Georgia,serif;color:#1d211f">
         <p style="margin:0;color:#8a432f;font-size:12px;letter-spacing:2px;text-transform:uppercase">New rehearsal dinner reply</p>
-        <h1 style="margin:12px 0 24px;color:#14292b;font-size:32px;font-weight:normal">${escapeHtml(data.name)}</h1>
+        <h1 style="margin:12px 0 24px;color:#14292b;font-size:32px;font-weight:normal">${escapeHtml(party.label)}</h1>
         <table cellpadding="10" style="width:100%;border-collapse:collapse;font-size:15px">
           ${rows
             .map(
@@ -86,9 +101,16 @@ function organizerEmail(data: RehearsalRsvpData) {
   };
 }
 
-function guestEmail(data: RehearsalRsvpData) {
+function guestEmail(
+  data: RehearsalRsvpData,
+  primaryGuest: RehearsalGuest,
+  attendees: RehearsalGuest[]
+) {
   const attending = data.attending === "yes";
-  const firstName = data.name.split(/\s+/)[0];
+  const firstName = primaryGuest.displayName.split(/\s+/)[0];
+  const attendeeNames = attendees
+    .map((attendee) => attendee.displayName)
+    .join(", ");
 
   return {
     subject: attending
@@ -100,7 +122,7 @@ function guestEmail(data: RehearsalRsvpData) {
         <h1 style="margin:14px 0 20px;color:#14292b;font-size:34px;font-weight:normal">Thank you, ${escapeHtml(firstName)}.</h1>
         <p style="margin:0;font-size:17px">
           ${attending
-            ? `We’re so happy you’ll be joining us${data.partySize > 1 ? ` — we have your party of ${data.partySize} on the list` : ""}.`
+            ? `We’re so happy you’ll be joining us. We have ${escapeHtml(attendeeNames)} on the list.`
             : "We’re sorry you can’t join us, but we appreciate you letting us know."}
         </p>
         ${detailsHtml()}
@@ -110,7 +132,7 @@ function guestEmail(data: RehearsalRsvpData) {
     text: [
       `Thank you, ${firstName}.`,
       attending
-        ? `We're so happy you'll be joining us${data.partySize > 1 ? ` — we have your party of ${data.partySize} on the list` : ""}.`
+        ? `We're so happy you'll be joining us. We have ${attendeeNames} on the list.`
         : "We're sorry you can't join us, but we appreciate you letting us know.",
       "",
       `${REHEARSAL_DETAILS.date} at ${REHEARSAL_DETAILS.time}`,
@@ -150,6 +172,43 @@ export async function POST(request: Request) {
       );
     }
 
+    const party = REHEARSAL_PARTY_BY_ID[data.partyId];
+    const primaryGuest = REHEARSAL_GUEST_BY_ID[data.primaryGuestId];
+
+    if (!party || !primaryGuest || primaryGuest.partyId !== party.id) {
+      return NextResponse.json(
+        { error: "This guest is not on the rehearsal dinner list" },
+        { status: 400 }
+      );
+    }
+
+    const validMemberIds = new Set(party.members.map((member) => member.id));
+    const uniqueAttendeeIds = new Set(data.attendeeIds);
+
+    if (
+      uniqueAttendeeIds.size !== data.attendeeIds.length ||
+      data.attendeeIds.some((guestId) => !validMemberIds.has(guestId))
+    ) {
+      return NextResponse.json(
+        { error: "One or more attendees are not part of this invitation" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      data.attending === "yes" &&
+      !uniqueAttendeeIds.has(primaryGuest.id)
+    ) {
+      return NextResponse.json(
+        { error: "The responding guest must be included in the RSVP" },
+        { status: 400 }
+      );
+    }
+
+    const attendees = data.attendeeIds.map(
+      (guestId) => REHEARSAL_GUEST_BY_ID[guestId]
+    );
+
     if (!process.env.RESEND_API_KEY) {
       console.error("Rehearsal RSVP is missing RESEND_API_KEY");
       return NextResponse.json(
@@ -165,8 +224,13 @@ export async function POST(request: Request) {
       process.env.RESEND_FROM ??
       "Delina & Jackson <onboarding@resend.dev>";
     const replyTo = process.env.REHEARSAL_RSVP_REPLY_TO ?? organizers[0];
-    const organizerCopy = organizerEmail(data);
-    const guestCopy = guestEmail(data);
+    const organizerCopy = organizerEmail(
+      data,
+      party,
+      primaryGuest,
+      attendees
+    );
+    const guestCopy = guestEmail(data, primaryGuest, attendees);
 
     const { error } = await resend.batch.send([
       {
