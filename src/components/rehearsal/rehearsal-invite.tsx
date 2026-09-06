@@ -1,27 +1,36 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  KeyboardEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
 import { REHEARSAL_DETAILS } from "@/lib/rehearsal-details";
+import {
+  REHEARSAL_GUEST_BY_ID,
+  REHEARSAL_PARTY_BY_ID,
+  rehearsalGuestName,
+  searchRehearsalGuests,
+} from "@/lib/rehearsal-guests";
 
 type Attendance = "" | "yes" | "no";
 
 type FormState = {
-  name: string;
   email: string;
   attending: Attendance;
-  partySize: string;
   dietaryRestrictions: string;
   message: string;
   website: string;
 };
 
 const INITIAL_FORM: FormState = {
-  name: "",
   email: "",
   attending: "",
-  partySize: "1",
   dietaryRestrictions: "",
   message: "",
   website: "",
@@ -36,6 +45,32 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
 
+  // Name lookup
+  const [nameQuery, setNameQuery] = useState("");
+  const [primaryGuestId, setPrimaryGuestId] = useState("");
+  const [isListOpen, setIsListOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  // Who from the household is coming — keyed by guest id.
+  const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
+  // Tracks the address we pre-filled, so we only overwrite our own guess.
+  const [prefilledEmail, setPrefilledEmail] = useState("");
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
+
+  const primaryGuest = primaryGuestId
+    ? REHEARSAL_GUEST_BY_ID[primaryGuestId]
+    : undefined;
+  const party = primaryGuest
+    ? REHEARSAL_PARTY_BY_ID[primaryGuest.partyId]
+    : undefined;
+
+  const matches = useMemo(
+    () => (primaryGuest ? [] : searchRehearsalGuests(nameQuery)),
+    [nameQuery, primaryGuest]
+  );
+  const showList = isListOpen && !primaryGuest && nameQuery.trim().length > 0;
+
   const updateField = <K extends keyof FormState>(
     field: K,
     value: FormState[K]
@@ -43,9 +78,81 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const selectGuest = (guestId: string) => {
+    const guest = REHEARSAL_GUEST_BY_ID[guestId];
+    if (!guest) return;
+
+    setPrimaryGuestId(guest.id);
+    setNameQuery(rehearsalGuestName(guest));
+    setIsListOpen(false);
+    setHighlightedIndex(0);
+    setAttendeeIds([guest.id]);
+    setError("");
+
+    // Pre-fill the household email, but never clobber something typed by hand.
+    const householdEmail = REHEARSAL_PARTY_BY_ID[guest.partyId]?.email ?? "";
+    setForm((current) =>
+      current.email === "" || current.email === prefilledEmail
+        ? { ...current, email: householdEmail }
+        : current
+    );
+    setPrefilledEmail(householdEmail);
+  };
+
+  const clearGuest = (query: string) => {
+    setPrimaryGuestId("");
+    setNameQuery(query);
+    setAttendeeIds([]);
+    setIsListOpen(true);
+    setHighlightedIndex(0);
+  };
+
+  const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!showList || matches.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((index) => (index + 1) % matches.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex(
+        (index) => (index - 1 + matches.length) % matches.length
+      );
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const guest = matches[highlightedIndex] ?? matches[0];
+      if (guest) selectGuest(guest.id);
+    } else if (event.key === "Escape") {
+      setIsListOpen(false);
+    }
+  };
+
+  const toggleAttendee = (guestId: string) => {
+    if (guestId === primaryGuestId) return;
+    setAttendeeIds((current) =>
+      current.includes(guestId)
+        ? current.filter((id) => id !== guestId)
+        : [...current, guestId]
+    );
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+
+    if (!primaryGuest || !party) {
+      setError("Please pick your name from the list.");
+      nameInputRef.current?.focus();
+      return;
+    }
+
+    const attending = form.attending === "yes";
+
+    if (attending && attendeeIds.length === 0) {
+      setError("Please check off at least one person who's coming.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -53,9 +160,22 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
           inviteToken,
-          partySize: Number(form.partySize),
+          party_id: party.id,
+          primary_guest_id: primaryGuest.id,
+          email: form.email,
+          attending: form.attending,
+          attendees: attending
+            ? party.members
+                .filter((member) => attendeeIds.includes(member.id))
+                .map((member) => ({
+                  guest_id: member.id,
+                  display_name: rehearsalGuestName(member),
+                }))
+            : [],
+          dietaryRestrictions: attending ? form.dietaryRestrictions : "",
+          message: form.message,
+          website: form.website,
         }),
       });
 
@@ -167,7 +287,7 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                     <Check className="size-4" aria-hidden="true" />
                   </div>
                   <h2 className="mt-6 font-serif text-4xl text-[#14292B]">
-                    Thank you, {form.name.split(" ")[0]}.
+                    Thank you, {primaryGuest?.first ?? "friend"}.
                   </h2>
                   <p className="mt-3 max-w-lg leading-7 text-[#1D211F]/68">
                     {form.attending === "yes"
@@ -216,18 +336,87 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                     </fieldset>
 
                     <div className="grid gap-7 sm:grid-cols-2">
-                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                        Your name
+                      {/* Name lookup — pick from the invite list, same as the wedding RSVP */}
+                      <div
+                        className="relative"
+                        onBlur={(event) => {
+                          if (
+                            !event.currentTarget.contains(
+                              event.relatedTarget as Node | null
+                            )
+                          ) {
+                            setIsListOpen(false);
+                          }
+                        }}
+                      >
+                        <label
+                          className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase"
+                          htmlFor="rehearsal-name"
+                        >
+                          Your name
+                        </label>
                         <input
+                          id="rehearsal-name"
+                          ref={nameInputRef}
                           className={fieldClassName}
                           name="name"
-                          autoComplete="name"
-                          value={form.name}
-                          onChange={(event) => updateField("name", event.target.value)}
-                          placeholder="First and last name"
+                          autoComplete="off"
+                          role="combobox"
+                          aria-expanded={showList}
+                          aria-controls={listboxId}
+                          aria-autocomplete="list"
+                          value={nameQuery}
+                          onChange={(event) => clearGuest(event.target.value)}
+                          onFocus={() => setIsListOpen(true)}
+                          onKeyDown={handleNameKeyDown}
+                          placeholder="Start typing your name…"
                           required
                         />
-                      </label>
+
+                        {showList && (
+                          <ul
+                            id={listboxId}
+                            role="listbox"
+                            className="absolute top-full right-0 left-0 z-20 mt-1 max-h-64 overflow-y-auto border border-[#14292B]/20 bg-[#F4EFE6] shadow-[0_18px_40px_-24px_rgba(20,41,43,0.6)]"
+                          >
+                            {matches.length === 0 ? (
+                              <li className="px-4 py-3 text-sm leading-6 text-[#1D211F]/60">
+                                No match — please double-check your invitation.
+                              </li>
+                            ) : (
+                              matches.map((guest, index) => (
+                                <li key={guest.id} role="none">
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={index === highlightedIndex}
+                                    onMouseEnter={() => setHighlightedIndex(index)}
+                                    onMouseDown={(event) => event.preventDefault()}
+                                    onClick={() => selectGuest(guest.id)}
+                                    className={`flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left text-sm transition-colors ${
+                                      index === highlightedIndex
+                                        ? "bg-[#14292B] text-[#F4EFE6]"
+                                        : "text-[#1D211F]"
+                                    }`}
+                                  >
+                                    <span>{rehearsalGuestName(guest)}</span>
+                                    <span
+                                      className={`text-xs ${
+                                        index === highlightedIndex
+                                          ? "text-[#F4EFE6]/70"
+                                          : "text-[#1D211F]/50"
+                                      }`}
+                                    >
+                                      {guest.partyLabel}
+                                    </span>
+                                  </button>
+                                </li>
+                              ))
+                            )}
+                          </ul>
+                        )}
+                      </div>
+
                       <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
                         Email
                         <input
@@ -243,33 +432,56 @@ export function RehearsalInvite({ inviteToken }: { inviteToken: string }) {
                       </label>
                     </div>
 
+                    {form.attending === "yes" && party && (
+                      <fieldset>
+                        <legend className="text-xs tracking-[0.2em] text-[#14292B]/70 uppercase">
+                          Who&apos;s joining you?
+                        </legend>
+                        <p className="mt-2 text-sm leading-6 text-[#1D211F]/58">
+                          {`Check off everyone from ${party.label} who’ll be at dinner.`}
+                        </p>
+                        <div className="mt-4 border-t border-[#14292B]/15">
+                          {party.members.map((member) => {
+                            const isPrimary = member.id === primaryGuestId;
+                            return (
+                              <label
+                                key={member.id}
+                                className="flex min-h-13 cursor-pointer items-center gap-4 border-b border-[#14292B]/15 py-3"
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="size-4 shrink-0 accent-[#14292B] disabled:opacity-60"
+                                  checked={attendeeIds.includes(member.id)}
+                                  disabled={isPrimary}
+                                  onChange={() => toggleAttendee(member.id)}
+                                />
+                                <span className="text-base text-[#1D211F]">
+                                  {rehearsalGuestName(member)}
+                                </span>
+                                {isPrimary && (
+                                  <span className="text-[0.65rem] tracking-[0.22em] text-[#14292B]/45 uppercase">
+                                    You
+                                  </span>
+                                )}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </fieldset>
+                    )}
+
                     {form.attending === "yes" && (
-                      <div className="grid gap-7 sm:grid-cols-2">
-                        <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                          Number attending
-                          <select
-                            className={fieldClassName}
-                            name="partySize"
-                            value={form.partySize}
-                            onChange={(event) => updateField("partySize", event.target.value)}
-                          >
-                            {Array.from({ length: 10 }, (_, index) => index + 1).map((size) => (
-                              <option key={size} value={size}>{size}</option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
-                          Dietary notes
-                          <input
-                            className={fieldClassName}
-                            name="dietaryRestrictions"
-                            value={form.dietaryRestrictions}
-                            onChange={(event) => updateField("dietaryRestrictions", event.target.value)}
-                            placeholder="Optional"
-                            maxLength={500}
-                          />
-                        </label>
-                      </div>
+                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
+                        Dietary notes
+                        <input
+                          className={fieldClassName}
+                          name="dietaryRestrictions"
+                          value={form.dietaryRestrictions}
+                          onChange={(event) => updateField("dietaryRestrictions", event.target.value)}
+                          placeholder="Allergies or anything we should know — optional"
+                          maxLength={500}
+                        />
+                      </label>
                     )}
 
                     <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
