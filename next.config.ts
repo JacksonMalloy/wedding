@@ -4,9 +4,8 @@ import pinpoint from "@pinpoint/next/config";
 const nextConfig: NextConfig = {
   turbopack: {},
   async headers() {
-    return [
-      {
-        source: "/invite/:path*",
+    return ["/invite/:path*", "/reception/:path*"].map((source) => ({
+        source,
         headers: [
           {
             key: "X-Robots-Tag",
@@ -17,8 +16,7 @@ const nextConfig: NextConfig = {
             value: "no-referrer",
           },
         ],
-      },
-    ];
+      }));
   },
 };
 
