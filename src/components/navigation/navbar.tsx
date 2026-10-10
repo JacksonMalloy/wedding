@@ -17,7 +17,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const activeSection = useActiveSection(NAV_ITEMS.map((item) => item.id));
   const scrollTo = useScrollTo();
-  const isPrivateInvitation = pathname.startsWith("/invite/");
+  const isPrivateInvitation = pathname.startsWith("/invite/") || pathname.startsWith("/reception/");
 
   useEffect(() => {
     const handleScroll = () => {
