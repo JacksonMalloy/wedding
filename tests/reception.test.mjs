@@ -8,43 +8,17 @@ import { receptionRsvpSchema } from "../src/lib/validations/reception-rsvp.ts";
 const sample = (changes = {}) => ({
   inviteToken: "local-test-token-only",
   requestId: "9827ecbb-45e1-42f4-a8b6-7b6a35f7b12e",
-  party_id: "reception-kelly-richard",
-  primary_guest_id: "reception-kelly-malloy",
+  name: "Jordan  Example",
+  guests: ["Sam Smith", " Alex  Lee "],
   email: "guest@example.com",
   attending: "yes",
-  attendees: [{ guest_id: "reception-kelly-malloy" }],
   dietaryRestrictions: "",
   message: "",
   website: "",
   ...changes,
 });
 
-const resolve = (changes = {}) => resolveReceptionRsvp(sample(changes), RECEPTION_PARTIES);
-
-const typed = (changes = {}) => {
-  const { party_id, primary_guest_id, attendees, ...rest } = sample();
-  return { ...rest, name: "Jordan  Example", party_size: 3, ...changes };
-};
-
-test("any typed name is accepted with a headcount", () => {
-  const data = receptionRsvpSchema.parse(typed());
-  const result = resolveReceptionRsvp(data, RECEPTION_PARTIES).value;
-  assert.equal(result.onGuestList, false);
-  assert.equal(result.primaryName, "Jordan Example");
-  assert.equal(result.firstName, "Jordan");
-  assert.equal(result.partySize, 3);
-});
-
-test("typed-name declines count nobody, and typed names still need a name and headcount", () => {
-  const data = receptionRsvpSchema.parse(typed({ attending: "no" }));
-  assert.equal(data.party_size, undefined);
-  assert.equal(resolveReceptionRsvp(data, RECEPTION_PARTIES).value.partySize, 0);
-  assert.equal(receptionRsvpSchema.safeParse(typed({ name: "  " })).success, false);
-  assert.equal(receptionRsvpSchema.safeParse(typed({ party_size: undefined })).success, false);
-  assert.equal(receptionRsvpSchema.safeParse(typed({ party_size: 11 })).success, false);
-  assert.equal(receptionRsvpSchema.safeParse(typed({ attendees: [{ guest_id: "reception-kelly-malloy" }] })).success, false);
-  assert.equal(receptionRsvpSchema.safeParse(typed({ party_id: "reception-kelly-richard" })).success, false);
-});
+const resolve = (changes = {}) => resolveReceptionRsvp(receptionRsvpSchema.parse(sample(changes)));
 
 test("only six confirmed adult-contact households are staged", () => {
   assert.equal(RECEPTION_PARTIES.length, 6);
@@ -74,40 +48,34 @@ test("event is a confirmed November open house in Vancouver time", () => {
   assert.equal(hasReceptionTiming({ ...RECEPTION_DETAILS, time: " " }), false);
 });
 
-test("valid RSVP resolves only canonical server-side names", () => {
-  const result = resolve({ attendees: [{ guest_id: "reception-richard-maccuish" }, { guest_id: "reception-kelly-malloy" }] });
-  assert.deepEqual(result.value.attendeeNames, ["Kelly Malloy", "Richard MacCuish"]);
-  assert.equal(result.value.partySize, 2);
+test("any name is accepted, with the named guests they are bringing", () => {
+  const result = resolve();
+  assert.equal(result.primaryName, "Jordan Example");
+  assert.equal(result.firstName, "Jordan");
+  assert.deepEqual(result.guestNames, ["Sam Smith", "Alex Lee"]);
+  assert.equal(result.partySize, 3);
+  assert.equal(resolve({ guests: [] }).partySize, 1);
+  assert.equal(resolve({ guests: undefined }).partySize, 1);
 });
 
-test("cross-party primary and unknown parties are rejected", () => {
-  assert.ok(resolve({ primary_guest_id: "reception-leon-lee" }).error);
-  assert.ok(resolve({ party_id: "not-invited" }).error);
+test("names and guest rows must be filled in and bounded", () => {
+  assert.equal(receptionRsvpSchema.safeParse(sample({ name: "  " })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(sample({ guests: ["Sam", " "] })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(sample({ guests: Array(11).fill("Guest") })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(sample({ guests: Array(10).fill("Guest") })).success, true);
+  assert.equal(receptionRsvpSchema.safeParse(sample({ guests: ["x".repeat(101)] })).success, false);
 });
 
-test("cross-party, duplicated and missing-primary attendees are rejected", () => {
-  assert.ok(resolve({ attendees: [{ guest_id: "reception-kelly-malloy" }, { guest_id: "reception-leon-lee" }] }).error);
-  assert.ok(resolve({ attendees: [{ guest_id: "reception-kelly-malloy" }, { guest_id: "reception-kelly-malloy" }] }).error);
-  assert.ok(resolve({ attendees: [{ guest_id: "reception-richard-maccuish" }] }).error);
-});
-
-test("Leon can include the invited unnamed guest, who cannot be the primary", () => {
-  const party = { party_id: "reception-leon", primary_guest_id: "reception-leon-lee", attendees: [{ guest_id: "reception-leon-lee" }, { guest_id: "reception-leon-plus-one" }] };
-  assert.equal(resolve(party).value.partySize, 2);
-  assert.ok(resolve({ ...party, primary_guest_id: "reception-leon-plus-one" }).error);
-});
-
-test("declines include no attendees or dietary notes", () => {
-  const data = receptionRsvpSchema.parse(sample({ attending: "no", attendees: [], dietaryRestrictions: "stale note" }));
+test("declines include no guests or dietary notes", () => {
+  const data = receptionRsvpSchema.parse(sample({ attending: "no", dietaryRestrictions: "stale note" }));
   assert.equal(data.dietaryRestrictions, "");
-  assert.equal(resolveReceptionRsvp(data, RECEPTION_PARTIES).value.partySize, 0);
-  assert.equal(receptionRsvpSchema.safeParse(sample({ attending: "no" })).success, false);
+  assert.deepEqual(data.guests, []);
+  assert.equal(resolveReceptionRsvp(data).partySize, 0);
 });
 
-test("schema rejects forged names, invalid email, malformed request IDs and empty attendance", () => {
-  assert.equal(receptionRsvpSchema.safeParse(sample({ attendees: [{ guest_id: "reception-kelly-malloy", display_name: "Forged name" }] })).success, false);
+test("schema rejects unknown fields, invalid email and malformed request IDs", () => {
+  assert.equal(receptionRsvpSchema.safeParse(sample({ party_id: "reception-kelly-richard" })).success, false);
   assert.equal(receptionRsvpSchema.safeParse(sample({ email: "not an email" })).success, false);
   assert.equal(receptionRsvpSchema.safeParse(sample({ requestId: "123" })).success, false);
-  assert.equal(receptionRsvpSchema.safeParse(sample({ attendees: [] })).success, false);
   assert.equal(receptionRsvpSchema.safeParse(sample({ message: "x".repeat(1001) })).success, false);
 });

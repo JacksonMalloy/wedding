@@ -6,7 +6,6 @@ import {
   isValidReceptionInviteToken,
 } from "@/lib/reception-access";
 import { RECEPTION_DETAILS } from "@/lib/reception-details";
-import { RECEPTION_PARTIES } from "@/lib/reception-guests";
 import { resolveReceptionRsvp, type ResolvedReceptionRsvp } from "@/lib/reception-rsvp";
 import {
   receptionRsvpSchema,
@@ -52,24 +51,17 @@ function detailsHtml(): string {
 function organizerEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp) {
   const attending = data.attending === "yes";
   const subject = attending
-    ? `West Coast reception RSVP — ${resolved.partyLabel}: ${resolved.partySize} attending`
-    : `West Coast reception RSVP — ${resolved.partyLabel} declined`;
+    ? `West Coast reception RSVP — ${resolved.primaryName}: ${resolved.partySize} attending`
+    : `West Coast reception RSVP — ${resolved.primaryName} declined`;
   const rows: Array<[string, string]> = [
-    ["Party", resolved.partyLabel],
-    ["On guest list", resolved.onGuestList ? "Yes" : "No — name typed in"],
-    ["Replied by", resolved.primaryName],
+    ["Name", resolved.primaryName],
     ["Email", data.email],
     ["Attending", attending ? "Yes" : "No"],
   ];
 
   if (attending) {
     rows.push(["Headcount", String(resolved.partySize)]);
-    rows.push([
-      "Guests",
-      resolved.onGuestList
-        ? resolved.attendeeNames.join(", ")
-        : `${resolved.primaryName}${resolved.partySize > 1 ? ` + ${resolved.partySize - 1} more` : ""}`,
-    ]);
+    rows.push(["Bringing", resolved.guestNames.join(", ") || "No one"]);
     rows.push(["Dietary notes", data.dietaryRestrictions]);
   }
   rows.push(["Message", data.message]);
@@ -79,7 +71,7 @@ function organizerEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp
     html: `
       <main style="max-width:620px;margin:0 auto;padding:36px 24px;font-family:Georgia,serif;color:#1d211f">
         <p style="margin:0;color:#8a432f;font-size:12px;letter-spacing:2px;text-transform:uppercase">New West Coast reception reply</p>
-        <h1 style="margin:12px 0 24px;color:#14292b;font-size:32px;font-weight:normal">${escapeHtml(resolved.partyLabel)}</h1>
+        <h1 style="margin:12px 0 24px;color:#14292b;font-size:32px;font-weight:normal">${escapeHtml(resolved.primaryName)}</h1>
         <table cellpadding="10" style="width:100%;border-collapse:collapse;font-size:15px">
           ${rows
             .map(
@@ -99,15 +91,8 @@ function organizerEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp
 
 function guestEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp) {
   const attending = data.attending === "yes";
-  const others = resolved.attendeeNames.filter(
-    (name) => name !== resolved.primaryName
-  );
-  const guestListLine = !resolved.onGuestList
-    ? resolved.partySize > 1
-      ? `We have you down for ${resolved.partySize}.`
-      : ""
-    : others.length
-    ? `We have you down with ${others.join(", ")}.`
+  const guestListLine = resolved.guestNames.length
+    ? `We have you down with ${resolved.guestNames.join(", ")}.`
     : "";
 
   return {
@@ -184,11 +169,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "RSVP sent successfully" });
     }
 
-    const resolution = resolveReceptionRsvp(data, RECEPTION_PARTIES);
-    if ("error" in resolution) {
-      return NextResponse.json({ error: resolution.error }, { status: 400 });
-    }
-    const resolved = resolution.value;
+    const resolved = resolveReceptionRsvp(data);
 
     if (!process.env.RESEND_API_KEY) {
       console.error("Reception RSVP is missing RESEND_API_KEY");
