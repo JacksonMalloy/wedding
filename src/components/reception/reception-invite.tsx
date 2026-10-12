@@ -1,26 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import {
-  FormEvent,
-  KeyboardEvent,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
+import { FormEvent, useRef, useState } from "react";
+import { CalendarDays, Check, Clock3, MapPin, Plus, X } from "lucide-react";
 import { RECEPTION_DETAILS } from "@/lib/reception-details";
-import {
-  RECEPTION_GUEST_BY_ID,
-  RECEPTION_PARTY_BY_ID,
-  receptionGuestName,
-  searchReceptionGuests,
-} from "@/lib/reception-guests";
+import { MAX_RECEPTION_PLUS_GUESTS } from "@/lib/validations/reception-rsvp";
 
 type Attendance = "" | "yes" | "no";
 
 type FormState = {
+  name: string;
   email: string;
   attending: Attendance;
   dietaryRestrictions: string;
@@ -29,6 +18,7 @@ type FormState = {
 };
 
 const INITIAL_FORM: FormState = {
+  name: "",
   email: "",
   attending: "",
   dietaryRestrictions: "",
@@ -47,37 +37,15 @@ export function ReceptionInvite({
   rsvpOpen: boolean;
 }) {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  // Names of the people the guest is bringing; blank rows are dropped on submit.
+  const [guests, setGuests] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
 
-  // Name lookup
-  const [nameQuery, setNameQuery] = useState("");
-  const [primaryGuestId, setPrimaryGuestId] = useState("");
-  const [isListOpen, setIsListOpen] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  // Who from the household is coming — keyed by guest id.
-  const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
-  // Tracks the address we pre-filled, so we only overwrite our own guess.
-  const [prefilledEmail, setPrefilledEmail] = useState("");
-
   const submissionRef = useRef<{ body: string; id: string } | null>(null);
   const submittingRef = useRef(false);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const listboxId = useId();
-
-  const primaryGuest = primaryGuestId
-    ? RECEPTION_GUEST_BY_ID[primaryGuestId]
-    : undefined;
-  const party = primaryGuest
-    ? RECEPTION_PARTY_BY_ID[primaryGuest.partyId]
-    : undefined;
-
-  const matches = useMemo(
-    () => (primaryGuest ? [] : searchReceptionGuests(nameQuery)),
-    [nameQuery, primaryGuest]
-  );
-  const showList = isListOpen && !primaryGuest && nameQuery.trim().length > 0;
+  const guestInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const updateField = <K extends keyof FormState>(
     field: K,
@@ -86,86 +54,29 @@ export function ReceptionInvite({
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const selectGuest = (guestId: string) => {
-    const guest = RECEPTION_GUEST_BY_ID[guestId];
-    if (!guest) return;
-
-    setPrimaryGuestId(guest.id);
-    setNameQuery(receptionGuestName(guest));
-    setIsListOpen(false);
-    setHighlightedIndex(0);
-    setAttendeeIds([guest.id]);
-    setError("");
-
-    // Pre-fill the household email, but never clobber something typed by hand.
-    const householdEmail = guest.email ?? RECEPTION_PARTY_BY_ID[guest.partyId]?.email ?? "";
-    setForm((current) =>
-      current.email === "" || current.email === prefilledEmail
-        ? { ...current, email: householdEmail }
-        : current
-    );
-    setPrefilledEmail(householdEmail);
+  const addGuest = () => {
+    if (guests.length >= MAX_RECEPTION_PLUS_GUESTS) return;
+    const index = guests.length;
+    setGuests((current) => [...current, ""]);
+    requestAnimationFrame(() => guestInputRefs.current[index]?.focus());
   };
 
-  const clearGuest = (query: string) => {
-    setPrimaryGuestId("");
-    setNameQuery(query);
-    setAttendeeIds([]);
-    setForm((current) =>
-      current.email === prefilledEmail ? { ...current, email: "" } : current
-    );
-    setPrefilledEmail("");
-    setError("");
-    setIsListOpen(true);
-    setHighlightedIndex(0);
+  const updateGuest = (index: number, value: string) => {
+    setGuests((current) => current.map((guest, i) => (i === index ? value : guest)));
   };
 
-  const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (!showList || matches.length === 0) return;
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setHighlightedIndex((index) => (index + 1) % matches.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setHighlightedIndex(
-        (index) => (index - 1 + matches.length) % matches.length
-      );
-    } else if (event.key === "Enter") {
-      event.preventDefault();
-      const guest = matches[highlightedIndex] ?? matches[0];
-      if (guest) selectGuest(guest.id);
-    } else if (event.key === "Escape") {
-      setIsListOpen(false);
-    }
+  const removeGuest = (index: number) => {
+    setGuests((current) => current.filter((_, i) => i !== index));
   };
 
-  const toggleAttendee = (guestId: string) => {
-    if (guestId === primaryGuestId) return;
-    setAttendeeIds((current) =>
-      current.includes(guestId)
-        ? current.filter((id) => id !== guestId)
-        : [...current, guestId]
-    );
-  };
+  const firstName = form.name.trim().split(/\s+/)[0] || "friend";
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submittingRef.current || !rsvpOpen) return;
     setError("");
 
-    if (!primaryGuest || !party) {
-      setError("Please pick your name from the list.");
-      nameInputRef.current?.focus();
-      return;
-    }
-
     const attending = form.attending === "yes";
-
-    if (attending && attendeeIds.length === 0) {
-      setError("Please check off at least one person who's coming.");
-      return;
-    }
 
     submittingRef.current = true;
     setIsSubmitting(true);
@@ -173,17 +84,12 @@ export function ReceptionInvite({
     try {
       const payload = {
           inviteToken,
-          party_id: party.id,
-          primary_guest_id: primaryGuest.id,
+          name: form.name,
+          guests: attending
+            ? guests.map((guest) => guest.trim()).filter(Boolean)
+            : [],
           email: form.email,
           attending: form.attending,
-          attendees: attending
-            ? party.members
-                .filter((member) => attendeeIds.includes(member.id))
-                .map((member) => ({
-                  guest_id: member.id,
-                }))
-            : [],
           dietaryRestrictions: attending ? form.dietaryRestrictions : "",
           message: form.message,
           website: form.website,
@@ -317,7 +223,7 @@ export function ReceptionInvite({
                     <Check className="size-4" aria-hidden="true" />
                   </div>
                   <h2 className="mt-6 font-serif text-4xl text-[#14292B]">
-                    Thank you, {primaryGuest?.first ?? "friend"}.
+                    Thank you, {firstName}.
                   </h2>
                   <p className="mt-3 max-w-lg leading-7 text-[#1D211F]/68">
                     {form.attending === "yes"
@@ -368,88 +274,19 @@ export function ReceptionInvite({
                     </fieldset>
 
                     <div className="grid gap-7 sm:grid-cols-2">
-                      {/* Name lookup — pick from the invite list, same as the wedding RSVP */}
-                      <div
-                        className="relative"
-                        onBlur={(event) => {
-                          if (
-                            !event.currentTarget.contains(
-                              event.relatedTarget as Node | null
-                            )
-                          ) {
-                            setIsListOpen(false);
-                          }
-                        }}
-                      >
-                        <label
-                          className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase"
-                          htmlFor="reception-name"
-                        >
-                          Your name
-                        </label>
+                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
+                        Your name
                         <input
-                          id="reception-name"
-                          ref={nameInputRef}
                           className={fieldClassName}
                           name="name"
-                          autoComplete="off"
-                          role="combobox"
-                          aria-expanded={showList}
-                          aria-controls={showList ? listboxId : undefined}
-                          aria-activedescendant={showList && matches.length ? `${listboxId}-${matches[highlightedIndex]?.id ?? matches[0].id}` : undefined}
-                          aria-autocomplete="list"
-                          value={nameQuery}
-                          onChange={(event) => clearGuest(event.target.value)}
-                          onFocus={() => setIsListOpen(true)}
-                          onKeyDown={handleNameKeyDown}
-                          placeholder="Start typing your name…"
+                          autoComplete="name"
+                          value={form.name}
+                          onChange={(event) => updateField("name", event.target.value)}
+                          placeholder="Your full name"
+                          maxLength={100}
                           required
                         />
-
-                        {showList && (
-                          <ul
-                            id={listboxId}
-                            role="listbox"
-                            className="absolute top-full right-0 left-0 z-20 mt-1 max-h-64 overflow-y-auto border border-[#14292B]/20 bg-[#F4EFE6] shadow-[0_18px_40px_-24px_rgba(20,41,43,0.6)]"
-                          >
-                            {matches.length === 0 ? (
-                              <li className="px-4 py-3 text-sm leading-6 text-[#1D211F]/60">
-                                No match — please double-check your invitation.
-                              </li>
-                            ) : (
-                              matches.map((guest, index) => (
-                                <li key={guest.id} role="none">
-                                  <button
-                                    type="button"
-                                    role="option"
-                                    id={`${listboxId}-${guest.id}`}
-                                    aria-selected={index === highlightedIndex}
-                                    onMouseEnter={() => setHighlightedIndex(index)}
-                                    onMouseDown={(event) => event.preventDefault()}
-                                    onClick={() => selectGuest(guest.id)}
-                                    className={`flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left text-sm transition-colors ${
-                                      index === highlightedIndex
-                                        ? "bg-[#14292B] text-[#F4EFE6]"
-                                        : "text-[#1D211F]"
-                                    }`}
-                                  >
-                                    <span>{receptionGuestName(guest)}</span>
-                                    <span
-                                      className={`text-xs ${
-                                        index === highlightedIndex
-                                          ? "text-[#F4EFE6]/70"
-                                          : "text-[#1D211F]/50"
-                                      }`}
-                                    >
-                                      {guest.partyLabel}
-                                    </span>
-                                  </button>
-                                </li>
-                              ))
-                            )}
-                          </ul>
-                        )}
-                      </div>
+                      </label>
 
                       <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
                         Email
@@ -466,41 +303,55 @@ export function ReceptionInvite({
                       </label>
                     </div>
 
-                    {form.attending === "yes" && party && (
+                    {form.attending === "yes" && (
                       <fieldset>
                         <legend className="text-xs tracking-[0.2em] text-[#14292B]/70 uppercase">
-                          Who&apos;s joining you?
+                          Who are you bringing?
                         </legend>
                         <p className="mt-2 text-sm leading-6 text-[#1D211F]/58">
-                          {`Check off everyone from ${party.label} who’ll be at the reception.`}
+                          Add the name of each guest coming with you, so we know who to expect.
                         </p>
-                        <div className="mt-4 border-t border-[#14292B]/15">
-                          {party.members.map((member) => {
-                            const isPrimary = member.id === primaryGuestId;
-                            return (
-                              <label
-                                key={member.id}
-                                className="flex min-h-13 cursor-pointer items-center gap-4 border-b border-[#14292B]/15 py-3"
-                              >
-                                <input
-                                  type="checkbox"
-                                  className="size-4 shrink-0 accent-[#14292B] disabled:opacity-60"
-                                  checked={attendeeIds.includes(member.id)}
-                                  disabled={isPrimary}
-                                  onChange={() => toggleAttendee(member.id)}
-                                />
-                                <span className="text-base text-[#1D211F]">
-                                  {receptionGuestName(member)}
-                                </span>
-                                {isPrimary && (
-                                  <span className="text-[0.65rem] tracking-[0.22em] text-[#14292B]/45 uppercase">
-                                    You
-                                  </span>
-                                )}
-                              </label>
-                            );
-                          })}
-                        </div>
+                        {guests.length > 0 && (
+                          <ul className="mt-2">
+                            {guests.map((guest, index) => (
+                              <li key={index} className="flex items-end gap-3">
+                                <label className="flex-1">
+                                  <span className="sr-only">Guest {index + 1} name</span>
+                                  <input
+                                    ref={(element) => {
+                                      guestInputRefs.current[index] = element;
+                                    }}
+                                    className={fieldClassName}
+                                    name={`guest-${index + 1}`}
+                                    autoComplete="off"
+                                    value={guest}
+                                    onChange={(event) => updateGuest(index, event.target.value)}
+                                    placeholder={`Guest ${index + 1}’s full name`}
+                                    maxLength={100}
+                                  />
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => removeGuest(index)}
+                                  className="mb-2 flex size-10 shrink-0 items-center justify-center text-[#14292B]/60 transition-colors hover:text-[#B86F51] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#14292B]"
+                                  aria-label={`Remove guest ${index + 1}`}
+                                >
+                                  <X className="size-4" aria-hidden="true" />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {guests.length < MAX_RECEPTION_PLUS_GUESTS && (
+                          <button
+                            type="button"
+                            onClick={addGuest}
+                            className="mt-4 inline-flex min-h-11 items-center gap-2 border-b border-[#14292B]/45 text-xs tracking-[0.18em] text-[#14292B] uppercase transition-colors hover:border-[#B86F51] hover:text-[#B86F51] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#14292B]"
+                          >
+                            <Plus className="size-3.5" aria-hidden="true" />
+                            {guests.length ? "Add another guest" : "Add a guest"}
+                          </button>
+                        )}
                       </fieldset>
                     )}
 
