@@ -21,6 +21,31 @@ const sample = (changes = {}) => ({
 
 const resolve = (changes = {}) => resolveReceptionRsvp(sample(changes), RECEPTION_PARTIES);
 
+const typed = (changes = {}) => {
+  const { party_id, primary_guest_id, attendees, ...rest } = sample();
+  return { ...rest, name: "Jordan  Example", party_size: 3, ...changes };
+};
+
+test("any typed name is accepted with a headcount", () => {
+  const data = receptionRsvpSchema.parse(typed());
+  const result = resolveReceptionRsvp(data, RECEPTION_PARTIES).value;
+  assert.equal(result.onGuestList, false);
+  assert.equal(result.primaryName, "Jordan Example");
+  assert.equal(result.firstName, "Jordan");
+  assert.equal(result.partySize, 3);
+});
+
+test("typed-name declines count nobody, and typed names still need a name and headcount", () => {
+  const data = receptionRsvpSchema.parse(typed({ attending: "no" }));
+  assert.equal(data.party_size, undefined);
+  assert.equal(resolveReceptionRsvp(data, RECEPTION_PARTIES).value.partySize, 0);
+  assert.equal(receptionRsvpSchema.safeParse(typed({ name: "  " })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(typed({ party_size: undefined })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(typed({ party_size: 11 })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(typed({ attendees: [{ guest_id: "reception-kelly-malloy" }] })).success, false);
+  assert.equal(receptionRsvpSchema.safeParse(typed({ party_id: "reception-kelly-richard" })).success, false);
+});
+
 test("only six confirmed adult-contact households are staged", () => {
   assert.equal(RECEPTION_PARTIES.length, 6);
   assert.equal(RECEPTION_GUESTS.filter((guest) => !guest.isPlusOne).length, 10);

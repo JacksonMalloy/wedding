@@ -11,6 +11,7 @@ import {
 } from "react";
 import { CalendarDays, Check, Clock3, MapPin } from "lucide-react";
 import { RECEPTION_DETAILS } from "@/lib/reception-details";
+import { MAX_UNLISTED_PARTY_SIZE } from "@/lib/validations/reception-rsvp";
 import {
   RECEPTION_GUEST_BY_ID,
   RECEPTION_PARTY_BY_ID,
@@ -56,6 +57,8 @@ export function ReceptionInvite({
   const [primaryGuestId, setPrimaryGuestId] = useState("");
   const [isListOpen, setIsListOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  // Headcount for names typed in rather than picked from the list.
+  const [partySize, setPartySize] = useState(1);
   // Who from the household is coming — keyed by guest id.
   const [attendeeIds, setAttendeeIds] = useState<string[]>([]);
   // Tracks the address we pre-filled, so we only overwrite our own guess.
@@ -77,7 +80,9 @@ export function ReceptionInvite({
     () => (primaryGuest ? [] : searchReceptionGuests(nameQuery)),
     [nameQuery, primaryGuest]
   );
-  const showList = isListOpen && !primaryGuest && nameQuery.trim().length > 0;
+  // Suggestions are optional: any typed name is accepted, so hide the list when nothing matches.
+  const showList = isListOpen && !primaryGuest && matches.length > 0;
+  const typedName = nameQuery.trim();
 
   const updateField = <K extends keyof FormState>(
     field: K,
@@ -154,15 +159,15 @@ export function ReceptionInvite({
     if (submittingRef.current || !rsvpOpen) return;
     setError("");
 
-    if (!primaryGuest || !party) {
-      setError("Please pick your name from the list.");
+    if (!party && !typedName) {
+      setError("Please enter your name.");
       nameInputRef.current?.focus();
       return;
     }
 
     const attending = form.attending === "yes";
 
-    if (attending && attendeeIds.length === 0) {
+    if (attending && party && attendeeIds.length === 0) {
       setError("Please check off at least one person who's coming.");
       return;
     }
@@ -171,19 +176,28 @@ export function ReceptionInvite({
     setIsSubmitting(true);
 
     try {
+      const guestFields =
+        primaryGuest && party
+          ? {
+              party_id: party.id,
+              primary_guest_id: primaryGuest.id,
+              attendees: attending
+                ? party.members
+                    .filter((member) => attendeeIds.includes(member.id))
+                    .map((member) => ({
+                      guest_id: member.id,
+                    }))
+                : [],
+            }
+          : {
+              name: typedName,
+              ...(attending ? { party_size: partySize } : {}),
+            };
       const payload = {
           inviteToken,
-          party_id: party.id,
-          primary_guest_id: primaryGuest.id,
+          ...guestFields,
           email: form.email,
           attending: form.attending,
-          attendees: attending
-            ? party.members
-                .filter((member) => attendeeIds.includes(member.id))
-                .map((member) => ({
-                  guest_id: member.id,
-                }))
-            : [],
           dietaryRestrictions: attending ? form.dietaryRestrictions : "",
           message: form.message,
           website: form.website,
@@ -317,7 +331,7 @@ export function ReceptionInvite({
                     <Check className="size-4" aria-hidden="true" />
                   </div>
                   <h2 className="mt-6 font-serif text-4xl text-[#14292B]">
-                    Thank you, {primaryGuest?.first ?? "friend"}.
+                    Thank you, {primaryGuest?.first ?? (typedName.split(/\s+/)[0] || "friend")}.
                   </h2>
                   <p className="mt-3 max-w-lg leading-7 text-[#1D211F]/68">
                     {form.attending === "yes"
@@ -368,7 +382,7 @@ export function ReceptionInvite({
                     </fieldset>
 
                     <div className="grid gap-7 sm:grid-cols-2">
-                      {/* Name lookup — pick from the invite list, same as the wedding RSVP */}
+                      {/* Name — suggestions from the invite list, but any typed name is accepted */}
                       <div
                         className="relative"
                         onBlur={(event) => {
@@ -402,7 +416,7 @@ export function ReceptionInvite({
                           onChange={(event) => clearGuest(event.target.value)}
                           onFocus={() => setIsListOpen(true)}
                           onKeyDown={handleNameKeyDown}
-                          placeholder="Start typing your name…"
+                          placeholder="Your full name"
                           required
                         />
 
@@ -412,12 +426,7 @@ export function ReceptionInvite({
                             role="listbox"
                             className="absolute top-full right-0 left-0 z-20 mt-1 max-h-64 overflow-y-auto border border-[#14292B]/20 bg-[#F4EFE6] shadow-[0_18px_40px_-24px_rgba(20,41,43,0.6)]"
                           >
-                            {matches.length === 0 ? (
-                              <li className="px-4 py-3 text-sm leading-6 text-[#1D211F]/60">
-                                No match — please double-check your invitation.
-                              </li>
-                            ) : (
-                              matches.map((guest, index) => (
+                            {matches.map((guest, index) => (
                                 <li key={guest.id} role="none">
                                   <button
                                     type="button"
@@ -445,8 +454,7 @@ export function ReceptionInvite({
                                     </span>
                                   </button>
                                 </li>
-                              ))
-                            )}
+                              ))}
                           </ul>
                         )}
                       </div>
@@ -502,6 +510,24 @@ export function ReceptionInvite({
                           })}
                         </div>
                       </fieldset>
+                    )}
+
+                    {form.attending === "yes" && !party && (
+                      <label className="block text-xs tracking-[0.18em] text-[#14292B]/70 uppercase">
+                        How many are coming, including you?
+                        <select
+                          className={fieldClassName}
+                          name="party_size"
+                          value={partySize}
+                          onChange={(event) => setPartySize(Number(event.target.value))}
+                        >
+                          {Array.from({ length: MAX_UNLISTED_PARTY_SIZE }, (_, index) => index + 1).map((count) => (
+                            <option key={count} value={count}>
+                              {count}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                     )}
 
                     {form.attending === "yes" && (

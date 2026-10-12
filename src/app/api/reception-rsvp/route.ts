@@ -56,6 +56,7 @@ function organizerEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp
     : `West Coast reception RSVP — ${resolved.partyLabel} declined`;
   const rows: Array<[string, string]> = [
     ["Party", resolved.partyLabel],
+    ["On guest list", resolved.onGuestList ? "Yes" : "No — name typed in"],
     ["Replied by", resolved.primaryName],
     ["Email", data.email],
     ["Attending", attending ? "Yes" : "No"],
@@ -63,7 +64,12 @@ function organizerEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp
 
   if (attending) {
     rows.push(["Headcount", String(resolved.partySize)]);
-    rows.push(["Guests", resolved.attendeeNames.join(", ")]);
+    rows.push([
+      "Guests",
+      resolved.onGuestList
+        ? resolved.attendeeNames.join(", ")
+        : `${resolved.primaryName}${resolved.partySize > 1 ? ` + ${resolved.partySize - 1} more` : ""}`,
+    ]);
     rows.push(["Dietary notes", data.dietaryRestrictions]);
   }
   rows.push(["Message", data.message]);
@@ -96,7 +102,11 @@ function guestEmail(data: ReceptionRsvpData, resolved: ResolvedReceptionRsvp) {
   const others = resolved.attendeeNames.filter(
     (name) => name !== resolved.primaryName
   );
-  const guestListLine = others.length
+  const guestListLine = !resolved.onGuestList
+    ? resolved.partySize > 1
+      ? `We have you down for ${resolved.partySize}.`
+      : ""
+    : others.length
     ? `We have you down with ${others.join(", ")}.`
     : "";
 

@@ -7,12 +7,29 @@ export type ResolvedReceptionRsvp = {
   firstName: string;
   attendeeNames: string[];
   partySize: number;
+  onGuestList: boolean;
 };
 
 export function resolveReceptionRsvp(
   data: ReceptionRsvpData,
   parties: ReceptionParty[]
 ): { value: ResolvedReceptionRsvp; error?: never } | { error: string; value?: never } {
+  if (!data.party_id) {
+    // Not picked from the list: accept the typed name as-is.
+    const name = data.name.replace(/\s+/g, " ").trim();
+    const attending = data.attending === "yes";
+    return {
+      value: {
+        partyLabel: name,
+        primaryName: name,
+        firstName: name.split(" ")[0],
+        attendeeNames: attending ? [name] : [],
+        partySize: attending ? (data.party_size ?? 1) : 0,
+        onGuestList: false,
+      },
+    };
+  }
+
   const party = parties.find((candidate) => candidate.id === data.party_id);
   const primary = party?.members.find((guest) => guest.id === data.primary_guest_id);
 
@@ -50,6 +67,7 @@ export function resolveReceptionRsvp(
       firstName: primary.first,
       attendeeNames,
       partySize: attendeeNames.length,
+      onGuestList: true,
     },
   };
 }
